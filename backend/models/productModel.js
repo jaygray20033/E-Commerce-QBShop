@@ -1,23 +1,14 @@
-import mongoose, { MongooseError } from "mongoose";
+import mongoose from 'mongoose';
 
-const reviewSchema = new mongoose.Schema(
+const reviewSchema = mongoose.Schema(
   {
+    name: { type: String, required: true },
+    rating: { type: Number, required: true },
+    comment: { type: String, required: true },
     user: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
-    },
-    name: {
-      type: String,
-      required: true,
-    },
-    rating: {
-      type: String,
-      required: true,
-    },
-    comment: {
-      type: String,
-      required: true,
+      ref: 'User',
     },
   },
   {
@@ -25,12 +16,12 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-const productSchema = new mongoose.Schema(
+const productSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: 'User',
     },
     name: {
       type: String,
@@ -52,8 +43,13 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    review: [reviewSchema],
+    reviews: [reviewSchema],
     rating: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    numReviews: {
       type: Number,
       required: true,
       default: 0,
@@ -65,7 +61,7 @@ const productSchema = new mongoose.Schema(
     },
     countInStock: {
       type: Number,
-      reuqired: true,
+      required: true,
       default: 0,
     },
   },
@@ -74,6 +70,6 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-const Product = mongoose.model("Product", productSchema);
+const Product = mongoose.model('Product', productSchema);
 
 export default Product;
