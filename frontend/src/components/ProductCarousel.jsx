@@ -3,6 +3,7 @@ import { Carousel, Image } from 'react-bootstrap';
 import Message from './Message';
 import { useGetTopProductsQuery } from '../slices/productsApiSlice';
 import { formatPrice } from '../utils/formatPrice';
+import './ProductCarousel.css';
 
 const ProductCarousel = () => {
   const { data: products, isLoading, error } = useGetTopProductsQuery();
@@ -10,24 +11,69 @@ const ProductCarousel = () => {
   return isLoading ? null : error ? (
     <Message variant='danger'>{error?.data?.message || error.error}</Message>
   ) : (
-    <Carousel pause='hover' className='bg-primary mb-4'>
-      {products.map((product) => (
-        <Carousel.Item key={product._id}>
-          <Link to={`/product/${product._id}`}>
-            <Image
-              src={product.image || '/placeholder.svg'}
-              alt={product.name}
-              fluid
-            />
-            <Carousel.Caption className='carousel-caption'>
-              <h2 className='text-white text-right'>
-                {product.name} ({formatPrice(product.price)})
-              </h2>
-            </Carousel.Caption>
-          </Link>
-        </Carousel.Item>
-      ))}
-    </Carousel>
+    <div className='carousel-wrapper'>
+      <Carousel pause='hover' className='modern-carousel'>
+        {products.map((product, index) => (
+          <Carousel.Item key={product._id} className='carousel-item-animated'>
+            <Link to={`/product/${product._id}`} className='carousel-link'>
+              <div className='carousel-content'>
+                {/* Left side - Product Image */}
+                <div className='carousel-image-container'>
+                  <div className='carousel-image-wrapper'>
+                    <Image
+                      src={product.image || '/placeholder.svg'}
+                      alt={product.name}
+                      className='carousel-image'
+                    />
+                    <div className='carousel-image-overlay'></div>
+                  </div>
+                </div>
+
+                {/* Right side - Product Info */}
+                <div className='carousel-info-container'>
+                  <div className='carousel-info-content'>
+                    <span className='carousel-badge'>Featured Product</span>
+                    <h1 className='carousel-title'>{product.name}</h1>
+                    <p className='carousel-description'>
+                      {product.description}
+                    </p>
+
+                    <div className='carousel-details'>
+                      <div className='carousel-rating'>
+                        <span className='carousel-stars'>★★★★★</span>
+                        <span className='carousel-reviews'>
+                          ({product.numReviews} reviews)
+                        </span>
+                      </div>
+                      <div className='carousel-price-section'>
+                        <span className='carousel-price-label'>Price:</span>
+                        <span className='carousel-price'>
+                          {formatPrice(product.price)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button className='carousel-cta-button'>
+                      View Product
+                      <svg
+                        width='20'
+                        height='20'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                        strokeWidth='2'
+                      >
+                        <polyline points='9 18 15 12 9 6'></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </Carousel.Item>
+        ))}
+      </Carousel>
+    </div>
   );
 };
 

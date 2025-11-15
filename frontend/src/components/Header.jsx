@@ -10,6 +10,7 @@ import SearchBox from './SearchBox';
 import logo from '../assets/logo.png';
 import { resetCart } from '../slices/cartSlice';
 import { vi } from '../i18n/translations';
+import './Header.css';
 
 const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);
@@ -32,60 +33,106 @@ const Header = () => {
   };
 
   return (
-    <header>
-      <Navbar bg='primary' variant='dark' expand='lg' collapseOnSelect>
-        <Container>
-          <Navbar.Brand as={Link} to='/'>
-            <img src={logo || '/placeholder.svg'} alt='ProShop' />
-            ProShop
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls='basic-navbar-nav' />
-          <Navbar.Collapse id='basic-navbar-nav'>
-            <Nav className='ms-auto'>
-              <SearchBox />
-              <Nav.Link as={Link} to='/cart'>
-                <FaShoppingCart /> {vi.cart}
-                {cartItems.length > 0 && (
-                  <Badge pill bg='success' style={{ marginLeft: '5px' }}>
-                    {cartItems.reduce((a, c) => a + c.qty, 0)}
-                  </Badge>
-                )}
-              </Nav.Link>
-              {userInfo ? (
-                <>
-                  <NavDropdown title={userInfo.name} id='username'>
-                    <NavDropdown.Item as={Link} to='/profile'>
-                      {vi.profile}
-                    </NavDropdown.Item>
-                    <NavDropdown.Item onClick={logoutHandler}>
-                      {vi.logout}
-                    </NavDropdown.Item>
-                  </NavDropdown>
-                </>
-              ) : (
-                <Nav.Link as={Link} to='/login'>
-                  <FaUser /> {vi.signin}
-                </Nav.Link>
-              )}
+    <header className='modern-header'>
+      <div className='header-container'>
+        {/* Logo Section */}
+        <div className='header-logo'>
+          <Link to='/' className='logo-link'>
+            <div className='logo-icon'>Q</div>
+            <span className='logo-text'>quyetbui</span>
+          </Link>
+        </div>
 
-              {/* Admin Links */}
-              {userInfo && userInfo.isAdmin && (
-                <NavDropdown title={vi.admin} id='adminmenu'>
-                  <NavDropdown.Item as={Link} to='/admin/productlist'>
-                    {vi.products}
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to='/admin/orderlist'>
-                    {vi.orders}
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to='/admin/userlist'>
-                    {vi.users}
-                  </NavDropdown.Item>
-                </NavDropdown>
-              )}
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+        {/* Search Section */}
+        <div className='header-search'>
+          <SearchBox />
+        </div>
+
+        {/* Right Actions */}
+        <div className='header-actions'>
+          {/* Cart */}
+          <Link to='/cart' className='header-action-item cart-link'>
+            <svg
+              width='24'
+              height='24'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+            >
+              <circle cx='9' cy='21' r='1'></circle>
+              <circle cx='20' cy='21' r='1'></circle>
+              <path d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'></path>
+            </svg>
+            {cartItems.length > 0 && (
+              <span className='cart-badge'>
+                {cartItems.reduce((a, c) => a + c.qty, 0)}
+              </span>
+            )}
+          </Link>
+
+          {/* Auth Section */}
+          {userInfo ? (
+            <div className='header-user-menu'>
+              <button className='header-action-item user-button'>
+                <svg
+                  width='24'
+                  height='24'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                >
+                  <path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path>
+                  <circle cx='12' cy='7' r='4'></circle>
+                </svg>
+                <span className='user-name'>{userInfo.name}</span>
+              </button>
+              <div className='dropdown-menu'>
+                <Link to='/profile' className='dropdown-item'>
+                  {vi.profile}
+                </Link>
+                {userInfo.isAdmin && (
+                  <>
+                    <Link to='/admin/productlist' className='dropdown-item'>
+                      {vi.products}
+                    </Link>
+                    <Link to='/admin/orderlist' className='dropdown-item'>
+                      {vi.orders}
+                    </Link>
+                    <Link to='/admin/userlist' className='dropdown-item'>
+                      {vi.users}
+                    </Link>
+                    <hr />
+                  </>
+                )}
+                <button
+                  onClick={logoutHandler}
+                  className='dropdown-item logout'
+                >
+                  {vi.logout}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link to='/login' className='header-action-item login-link'>
+              <svg
+                width='24'
+                height='24'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+              >
+                <path d='M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4'></path>
+                <polyline points='10 17 15 12 10 7'></polyline>
+                <line x1='15' y1='12' x2='3' y2='12'></line>
+              </svg>
+              {vi.signin}
+            </Link>
+          )}
+        </div>
+      </div>
     </header>
   );
 };
