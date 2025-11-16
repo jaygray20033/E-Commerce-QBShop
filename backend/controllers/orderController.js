@@ -172,7 +172,10 @@ const vnpayReturn = asyncHandler(async (req, res) => {
   const result = verifyVNPayResponse(query);
 
   const orderId = query.vnp_TxnRef;
-  const returnUrl = process.env.REACT_APP_API || 'http://localhost:3000';
+  const returnUrl =
+    process.env.VNPAY_RETURN_URL ||
+    process.env.BASE_URL + '/api/orders/vnpay/return' ||
+    'http://localhost:5000/api/orders/vnpay/return';
 
   if (!result.isValid) {
     console.log('[v0] Invalid signature in return');
