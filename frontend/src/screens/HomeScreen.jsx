@@ -54,10 +54,6 @@ const HomeScreen = () => {
             <div className='header-content'>
               <h1 className='page-title'>{vi.latestProducts}</h1>
             </div>
-            <div className='product-count'>
-              Showing {data.products.length} of {data.total || 'multiple'}{' '}
-              products
-            </div>
           </div>
 
           <div className='products-grid-container'>

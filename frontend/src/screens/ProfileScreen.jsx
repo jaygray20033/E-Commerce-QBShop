@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react';
 import { Table, Form, Button, Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import { FaTimes } from 'react-icons/fa';
+import {
+  FaTimes,
+  FaUser,
+  FaEnvelope,
+  FaLock,
+  FaCheckCircle,
+} from 'react-icons/fa';
 
 import { toast } from 'react-toastify';
 import Message from '../components/Message';
@@ -14,6 +20,7 @@ import { setCredentials } from '../slices/authSlice';
 import { Link } from 'react-router-dom';
 import { vi } from '../i18n/translations';
 import { formatPrice } from '../utils/formatPrice';
+import './ProfileScreen.css';
 
 const ProfileScreen = () => {
   const [name, setName] = useState('');
@@ -54,114 +61,182 @@ const ProfileScreen = () => {
   };
 
   return (
-    <Row>
-      <Col md={3}>
-        <h2>{vi.userProfile}</h2>
+    <div className='profile-container'>
+      <div className='profile-header'>
+        <div className='profile-header-content'>
+          <h1 className='profile-title'>{vi.userProfile}</h1>
+          <p className='profile-subtitle'>
+            Manage your account information and view your orders
+          </p>
+        </div>
+        <div className='profile-user-badge'>
+          <FaUser className='badge-icon' />
+          <span>{userInfo.name}</span>
+        </div>
+      </div>
 
-        <Form onSubmit={submitHandler}>
-          <Form.Group className='my-2' controlId='name'>
-            <Form.Label>{vi.name}</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder={vi.enterName}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+      <Row className='profile-content'>
+        <Col md={3} className='profile-section'>
+          <div className='profile-form-card'>
+            <div className='form-header'>
+              <h2>{vi.userProfile}</h2>
+              <div className='form-header-line'></div>
+            </div>
 
-          <Form.Group className='my-2' controlId='email'>
-            <Form.Label>{vi.emailAddress}</Form.Label>
-            <Form.Control
-              type='email'
-              placeholder={vi.enterEmail}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+            <Form onSubmit={submitHandler} className='profile-form'>
+              <Form.Group className='form-group-custom' controlId='name'>
+                <Form.Label className='form-label-custom'>
+                  <FaUser className='label-icon' /> {vi.name}
+                </Form.Label>
+                <Form.Control
+                  type='text'
+                  placeholder={vi.enterName}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className='form-control-custom'
+                ></Form.Control>
+              </Form.Group>
 
-          <Form.Group className='my-2' controlId='password'>
-            <Form.Label>{vi.password}</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder={vi.enterPassword}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+              <Form.Group className='form-group-custom' controlId='email'>
+                <Form.Label className='form-label-custom'>
+                  <FaEnvelope className='label-icon' /> {vi.emailAddress}
+                </Form.Label>
+                <Form.Control
+                  type='email'
+                  placeholder={vi.enterEmail}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className='form-control-custom'
+                ></Form.Control>
+              </Form.Group>
 
-          <Form.Group className='my-2' controlId='confirmPassword'>
-            <Form.Label>{vi.confirmPassword}</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder={vi.confirmPassword}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+              <Form.Group className='form-group-custom' controlId='password'>
+                <Form.Label className='form-label-custom'>
+                  <FaLock className='label-icon' /> {vi.password}
+                </Form.Label>
+                <Form.Control
+                  type='password'
+                  placeholder={vi.enterPassword}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className='form-control-custom'
+                ></Form.Control>
+              </Form.Group>
 
-          <Button type='submit' variant='primary'>
-            {vi.update}
-          </Button>
-          {loadingUpdateProfile && <Loader />}
-        </Form>
-      </Col>
-      <Col md={9}>
-        <h2>{vi.myOrders}</h2>
-        {isLoading ? (
-          <Loader />
-        ) : error ? (
-          <Message variant='danger'>
-            {error?.data?.message || error.error}
-          </Message>
-        ) : (
-          <Table striped hover responsive className='table-sm'>
-            <thead>
-              <tr>
-                <th>{vi.id}</th>
-                <th>{vi.date}</th>
-                <th>{vi.total}</th>
-                <th>{vi.paid}</th>
-                <th>{vi.delivered}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order._id}>
-                  <td>{order._id}</td>
-                  <td>{order.createdAt.substring(0, 10)}</td>
-                  <td>{formatPrice(order.totalPrice)}</td>
-                  <td>
-                    {order.isPaid ? (
-                      order.paidAt.substring(0, 10)
-                    ) : (
-                      <FaTimes style={{ color: 'red' }} />
-                    )}
-                  </td>
-                  <td>
-                    {order.isDelivered ? (
-                      order.deliveredAt.substring(0, 10)
-                    ) : (
-                      <FaTimes style={{ color: 'red' }} />
-                    )}
-                  </td>
-                  <td>
-                    <Button
-                      as={Link}
-                      to={`/order/${order._id}`}
-                      className='btn-sm'
-                      variant='light'
-                    >
-                      {vi.details}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </Col>
-    </Row>
+              <Form.Group
+                className='form-group-custom'
+                controlId='confirmPassword'
+              >
+                <Form.Label className='form-label-custom'>
+                  <FaLock className='label-icon' /> {vi.confirmPassword}
+                </Form.Label>
+                <Form.Control
+                  type='password'
+                  placeholder={vi.confirmPassword}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className='form-control-custom'
+                ></Form.Control>
+              </Form.Group>
+
+              <Button type='submit' className='btn-update-profile'>
+                {loadingUpdateProfile ? (
+                  <>
+                    <Loader />
+                  </>
+                ) : (
+                  <>
+                    <FaCheckCircle /> {vi.update}
+                  </>
+                )}
+              </Button>
+            </Form>
+          </div>
+        </Col>
+
+        <Col md={9} className='profile-section'>
+          <div className='orders-card'>
+            <div className='orders-header'>
+              <h2>{vi.myOrders}</h2>
+              <div className='orders-header-line'></div>
+            </div>
+
+            {isLoading ? (
+              <Loader />
+            ) : error ? (
+              <Message variant='danger'>
+                {error?.data?.message || error.error}
+              </Message>
+            ) : orders.length === 0 ? (
+              <div className='empty-orders'>
+                <p>You have no orders yet.</p>
+              </div>
+            ) : (
+              <div className='orders-table-container'>
+                <Table striped hover responsive className='orders-table'>
+                  <thead>
+                    <tr>
+                      <th>{vi.id}</th>
+                      <th>{vi.date}</th>
+                      <th>{vi.total}</th>
+                      <th>{vi.paid}</th>
+                      <th>{vi.delivered}</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order, index) => (
+                      <tr
+                        key={order._id}
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                        className='order-row'
+                      >
+                        <td className='order-id'>
+                          {order._id.substring(0, 8)}...
+                        </td>
+                        <td className='order-date'>
+                          {order.createdAt.substring(0, 10)}
+                        </td>
+                        <td className='order-total'>
+                          {formatPrice(order.totalPrice)}
+                        </td>
+                        <td>
+                          {order.isPaid ? (
+                            <span className='status-badge paid'>
+                              {order.paidAt.substring(0, 10)}
+                            </span>
+                          ) : (
+                            <FaTimes style={{ color: 'red' }} />
+                          )}
+                        </td>
+                        <td>
+                          {order.isDelivered ? (
+                            <span className='status-badge delivered'>
+                              {order.deliveredAt.substring(0, 10)}
+                            </span>
+                          ) : (
+                            <FaTimes style={{ color: 'red' }} />
+                          )}
+                        </td>
+                        <td>
+                          <Button
+                            as={Link}
+                            to={`/order/${order._id}`}
+                            className='btn-details'
+                          >
+                            {vi.details}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </Col>
+      </Row>
+    </div>
   );
 };
 

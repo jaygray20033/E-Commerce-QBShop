@@ -1,7 +1,4 @@
-'use client';
-
-import { Navbar, Nav, Container, NavDropdown, Badge } from 'react-bootstrap';
-import { FaShoppingCart, FaUser } from 'react-icons/fa';
+import { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice';
@@ -16,20 +13,71 @@ const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth);
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [logoutApiCall] = useLogoutMutation();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const logoutHandler = async () => {
     try {
       await logoutApiCall().unwrap();
       dispatch(logout());
       dispatch(resetCart());
+      setDropdownOpen(false);
       navigate('/login');
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleToggleDropdown = (e) => {
+    e.preventDefault();
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  const handleNavigateToProfile = (e) => {
+    e.preventDefault();
+    setDropdownOpen(false);
+    navigate('/profile');
+  };
+
+  const handleNavigateToProductList = (e) => {
+    e.preventDefault();
+    setDropdownOpen(false);
+    navigate('/admin/productlist');
+  };
+
+  const handleNavigateToOrderList = (e) => {
+    e.preventDefault();
+    setDropdownOpen(false);
+    navigate('/admin/orderlist');
+  };
+
+  const handleNavigateToUserList = (e) => {
+    e.preventDefault();
+    setDropdownOpen(false);
+    navigate('/admin/userlist');
+  };
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    logoutHandler();
   };
 
   return (
@@ -73,8 +121,12 @@ const Header = () => {
 
           {/* Auth Section */}
           {userInfo ? (
-            <div className='header-user-menu'>
-              <button className='header-action-item user-button'>
+            <div className='header-user-menu' ref={dropdownRef}>
+              <button
+                className='header-action-item user-button'
+                onClick={handleToggleDropdown}
+                type='button'
+              >
                 <svg
                   width='24'
                   height='24'
@@ -88,31 +140,46 @@ const Header = () => {
                 </svg>
                 <span className='user-name'>{userInfo.name}</span>
               </button>
-              <div className='dropdown-menu'>
-                <Link to='/profile' className='dropdown-item'>
-                  {vi.profile}
-                </Link>
-                {userInfo.isAdmin && (
-                  <>
-                    <Link to='/admin/productlist' className='dropdown-item'>
-                      {vi.products}
-                    </Link>
-                    <Link to='/admin/orderlist' className='dropdown-item'>
-                      {vi.orders}
-                    </Link>
-                    <Link to='/admin/userlist' className='dropdown-item'>
-                      {vi.users}
-                    </Link>
-                    <hr />
-                  </>
-                )}
-                <button
-                  onClick={logoutHandler}
-                  className='dropdown-item logout'
-                >
-                  {vi.logout}
-                </button>
-              </div>
+
+              {dropdownOpen && (
+                <div className='dropdown-menu-content'>
+                  <button
+                    onClick={handleNavigateToProfile}
+                    className='dropdown-item'
+                  >
+                    {vi.profile}
+                  </button>
+                  {userInfo.isAdmin && (
+                    <>
+                      <button
+                        onClick={handleNavigateToProductList}
+                        className='dropdown-item'
+                      >
+                        {vi.products}
+                      </button>
+                      <button
+                        onClick={handleNavigateToOrderList}
+                        className='dropdown-item'
+                      >
+                        {vi.orders}
+                      </button>
+                      <button
+                        onClick={handleNavigateToUserList}
+                        className='dropdown-item'
+                      >
+                        {vi.users}
+                      </button>
+                      <hr className='dropdown-divider' />
+                    </>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className='dropdown-item logout'
+                  >
+                    {vi.logout}
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <Link to='/login' className='header-action-item login-link'>

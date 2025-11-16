@@ -209,7 +209,8 @@
   white-space: nowrap;
 }
 
-.dropdown-menu {
+/* Simplified dropdown styling for button-based approach */
+.dropdown-menu-content {
   position: absolute;
   top: 100%;
   right: 0;
@@ -220,18 +221,19 @@
   min-width: 200px;
   margin-top: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  pointer-events: none;
+  z-index: 10001;
+  animation: dropdownSlide 0.2s ease;
 }
 
-.header-user-menu:hover .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown-item {
@@ -247,6 +249,7 @@
   transition: all 0.3s ease;
   text-align: left;
   font-weight: 500;
+  font-family: inherit;
 }
 
 .dropdown-item:hover {
@@ -264,7 +267,7 @@
   color: #ff4444;
 }
 
-.dropdown-menu hr {
+.dropdown-divider {
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin: 8px 0;
