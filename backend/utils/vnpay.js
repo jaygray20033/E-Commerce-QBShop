@@ -99,7 +99,9 @@ export const createVNPayPaymentURL = (
     vnp_OrderInfo: `${orderInfo}`,
     vnp_OrderType: 'billpayment',
     vnp_Amount: vnpayAmount.toString(), // Use vnpayAmount (x100)
-    vnp_ReturnUrl: process.env.VNPAY_RETURN_URL,
+    vnp_ReturnUrl:
+      process.env.VNPAY_RETURN_URL ||
+      `${req.protocol}://${req.get('host')}/api/orders/vnpay/return`,
     vnp_IpAddr: ipAddr,
     vnp_CreateDate: createDate,
     vnp_ExpireDate: expireDate,
