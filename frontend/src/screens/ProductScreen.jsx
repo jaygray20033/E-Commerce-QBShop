@@ -12,6 +12,7 @@ import {
   Card,
   Button,
   Form,
+  Container,
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import {
@@ -25,6 +26,7 @@ import Meta from '../components/Meta';
 import { addToCart } from '../slices/cartSlice';
 import { vi } from '../i18n/translations';
 import { formatPrice } from '../utils/formatPrice';
+import './ProductScreen.css';
 
 const ProductScreen = () => {
   const { id: productId } = useParams();
@@ -71,75 +73,90 @@ const ProductScreen = () => {
 
   return (
     <>
-      <Link className='btn btn-light my-3' to='/'>
-        {vi.goBack}
-      </Link>
-      {isLoading ? (
-        <Loader />
-      ) : error ? (
-        <Message variant='danger'>
-          {error?.data?.message || error.error}
-        </Message>
-      ) : (
-        <>
-          <Meta title={product.name} description={product.description} />
-          <Row>
-            <Col md={6}>
-              <Image
-                src={product.image || '/placeholder.svg'}
-                alt={product.name}
-                fluid
-              />
-            </Col>
-            <Col md={3}>
-              <ListGroup variant='flush'>
-                <ListGroup.Item>
-                  <h3>{product.name}</h3>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Rating
-                    value={product.rating}
-                    text={`${product.numReviews} ${vi.reviews}`}
-                  />
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  {vi.price}: {formatPrice(product.price)}
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  {vi.description}: {product.description}
-                </ListGroup.Item>
-              </ListGroup>
-            </Col>
-            <Col md={3}>
-              <Card>
-                <ListGroup variant='flush'>
-                  <ListGroup.Item>
-                    <Row>
-                      <Col>{vi.price}:</Col>
-                      <Col>
-                        <strong>{formatPrice(product.price)}</strong>
-                      </Col>
-                    </Row>
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    <Row>
-                      <Col>{vi.countInStock}:</Col>
-                      <Col>
-                        {product.countInStock > 0 ? vi.inStock : vi.outOfStock}
-                      </Col>
-                    </Row>
-                  </ListGroup.Item>
+      <Container>
+        <Link className='back-button' to='/'>
+          <svg
+            width='18'
+            height='18'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+          >
+            <polyline points='15 18 9 12 15 6'></polyline>
+          </svg>
+          {vi.goBack}
+        </Link>
+        {isLoading ? (
+          <Loader />
+        ) : error ? (
+          <Message variant='danger'>
+            {error?.data?.message || error.error}
+          </Message>
+        ) : (
+          <>
+            <Meta title={product.name} description={product.description} />
 
-                  {/* Qty Select */}
-                  {product.countInStock > 0 && (
-                    <ListGroup.Item>
-                      <Row>
-                        <Col>{vi.quantity}</Col>
-                        <Col>
+            <div className='product-details-header'>
+              <h1 className='page-title'>{product.name}</h1>
+              <Rating
+                value={product.rating}
+                text={`${product.numReviews} ${vi.reviews}`}
+              />
+            </div>
+
+            <Row className='product-details-container'>
+              <Col md={6} className='product-image-col'>
+                <div className='product-image-wrapper'>
+                  <Image
+                    src={product.image || '/placeholder.svg'}
+                    alt={product.name}
+                    fluid
+                    className='product-detail-image'
+                  />
+                </div>
+              </Col>
+              <Col md={6} className='product-info-col'>
+                <Card className='product-info-card'>
+                  <ListGroup variant='flush'>
+                    <ListGroup.Item className='info-item'>
+                      <div className='info-label'>{vi.description}</div>
+                      <p className='info-description'>{product.description}</p>
+                    </ListGroup.Item>
+                    <ListGroup.Item className='info-item'>
+                      <div className='price-section'>
+                        <div className='info-label'>{vi.price}</div>
+                        <div className='product-price'>
+                          {formatPrice(product.price)}
+                        </div>
+                      </div>
+                    </ListGroup.Item>
+                    <ListGroup.Item className='info-item'>
+                      <div className='stock-section'>
+                        <div className='info-label'>{vi.countInStock}</div>
+                        <span
+                          className={`stock-badge ${
+                            product.countInStock > 0
+                              ? 'in-stock'
+                              : 'out-of-stock'
+                          }`}
+                        >
+                          {product.countInStock > 0
+                            ? vi.inStock
+                            : vi.outOfStock}
+                        </span>
+                      </div>
+                    </ListGroup.Item>
+
+                    {/* Qty Select */}
+                    {product.countInStock > 0 && (
+                      <ListGroup.Item className='info-item'>
+                        <div className='quantity-section'>
+                          <label className='info-label'>{vi.quantity}</label>
                           <Form.Control
                             as='select'
                             value={qty}
                             onChange={(e) => setQty(Number(e.target.value))}
+                            className='qty-select'
                           >
                             {[...Array(product.countInStock).keys()].map(
                               (x) => (
@@ -149,92 +166,122 @@ const ProductScreen = () => {
                               )
                             )}
                           </Form.Control>
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                  )}
+                        </div>
+                      </ListGroup.Item>
+                    )}
 
-                  <ListGroup.Item>
-                    <Button
-                      className='btn-block'
-                      type='button'
-                      disabled={product.countInStock === 0}
-                      onClick={addToCartHandler}
-                    >
-                      {vi.addToCart}
-                    </Button>
-                  </ListGroup.Item>
-                </ListGroup>
-              </Card>
-            </Col>
-          </Row>
-          <Row className='review'>
-            <Col md={6}>
-              <h2>{vi.reviews}</h2>
-              {product.reviews.length === 0 && (
-                <Message>{vi.noReviews}</Message>
-              )}
-              <ListGroup variant='flush'>
-                {product.reviews.map((review) => (
-                  <ListGroup.Item key={review._id}>
-                    <strong>{review.name}</strong>
-                    <Rating value={review.rating} />
-                    <p>{review.createdAt.substring(0, 10)}</p>
-                    <p>{review.comment}</p>
-                  </ListGroup.Item>
-                ))}
-                <ListGroup.Item>
-                  <h2>{vi.writeReview}</h2>
-
-                  {loadingProductReview && <Loader />}
-
-                  {userInfo ? (
-                    <Form onSubmit={submitHandler}>
-                      <Form.Group className='my-2' controlId='rating'>
-                        <Form.Label>{vi.rating}</Form.Label>
-                        <Form.Control
-                          as='select'
-                          required
-                          value={rating}
-                          onChange={(e) => setRating(e.target.value)}
-                        >
-                          <option value=''>{vi.selectRating}</option>
-                          <option value='1'>1 - Tệ</option>
-                          <option value='2'>2 - Trung Bình</option>
-                          <option value='3'>3 - Tốt</option>
-                          <option value='4'>4 - Rất Tốt</option>
-                          <option value='5'>5 - Xuất Sắc</option>
-                        </Form.Control>
-                      </Form.Group>
-                      <Form.Group className='my-2' controlId='comment'>
-                        <Form.Label>{vi.comment}</Form.Label>
-                        <Form.Control
-                          as='textarea'
-                          row='3'
-                          required
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                        ></Form.Control>
-                      </Form.Group>
+                    <ListGroup.Item className='info-item action-item'>
                       <Button
-                        disabled={loadingProductReview}
-                        type='submit'
-                        variant='primary'
+                        className='add-to-cart-btn'
+                        type='button'
+                        disabled={product.countInStock === 0}
+                        onClick={addToCartHandler}
                       >
-                        {vi.submit}
+                        {vi.addToCart}
                       </Button>
-                    </Form>
-                  ) : (
-                    <Message>
-                      {vi.signInToReview} <Link to='/login'>{vi.signin}</Link>
-                    </Message>
-                  )}
-                </ListGroup.Item>
-              </ListGroup>
-            </Col>
-          </Row>
-        </>
-      )}
+                    </ListGroup.Item>
+                  </ListGroup>
+                </Card>
+              </Col>
+            </Row>
+
+            <div className='reviews-section'>
+              <div className='reviews-header'>
+                <h2 className='section-title'>{vi.reviews}</h2>
+              </div>
+              <Row>
+                <Col md={6}>
+                  <div className='reviews-list'>
+                    {product.reviews.length === 0 && (
+                      <Message>{vi.noReviews}</Message>
+                    )}
+                    <ListGroup variant='flush' className='reviews-listgroup'>
+                      {product.reviews.map((review) => (
+                        <ListGroup.Item
+                          key={review._id}
+                          className='review-item'
+                        >
+                          <div className='review-header'>
+                            <strong className='review-author'>
+                              {review.name}
+                            </strong>
+                            <span className='review-date'>
+                              {review.createdAt.substring(0, 10)}
+                            </span>
+                          </div>
+                          <Rating value={review.rating} />
+                          <p className='review-text'>{review.comment}</p>
+                        </ListGroup.Item>
+                      ))}
+                    </ListGroup>
+                  </div>
+                </Col>
+                <Col md={6}>
+                  <Card className='review-form-card'>
+                    <Card.Body>
+                      <h3 className='form-title'>{vi.writeReview}</h3>
+
+                      {loadingProductReview && <Loader />}
+
+                      {userInfo ? (
+                        <Form onSubmit={submitHandler}>
+                          <Form.Group className='form-group' controlId='rating'>
+                            <Form.Label className='form-label'>
+                              {vi.rating}
+                            </Form.Label>
+                            <Form.Control
+                              as='select'
+                              required
+                              value={rating}
+                              onChange={(e) => setRating(e.target.value)}
+                              className='form-control-custom'
+                            >
+                              <option value=''>{vi.selectRating}</option>
+                              <option value='1'>1 - Tệ</option>
+                              <option value='2'>2 - Trung Bình</option>
+                              <option value='3'>3 - Tốt</option>
+                              <option value='4'>4 - Rất Tốt</option>
+                              <option value='5'>5 - Xuất Sắc</option>
+                            </Form.Control>
+                          </Form.Group>
+                          <Form.Group
+                            className='form-group'
+                            controlId='comment'
+                          >
+                            <Form.Label className='form-label'>
+                              {vi.comment}
+                            </Form.Label>
+                            <Form.Control
+                              as='textarea'
+                              row='3'
+                              required
+                              value={comment}
+                              onChange={(e) => setComment(e.target.value)}
+                              className='form-control-custom'
+                            ></Form.Control>
+                          </Form.Group>
+                          <Button
+                            disabled={loadingProductReview}
+                            type='submit'
+                            className='submit-review-btn'
+                          >
+                            {vi.submit}
+                          </Button>
+                        </Form>
+                      ) : (
+                        <Message>
+                          {vi.signInToReview}{' '}
+                          <Link to='/login'>{vi.signin}</Link>
+                        </Message>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+              </Row>
+            </div>
+          </>
+        )}
+      </Container>
     </>
   );
 };

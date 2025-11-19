@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/Loader';
-import FormContainer from '../components/FormContainer';
 
 import { useRegisterMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
 import { vi } from '../i18n/translations';
+import './LoginRegisterScreen.css';
 
 const RegisterScreen = () => {
   const [name, setName] = useState('');
@@ -52,64 +52,94 @@ const RegisterScreen = () => {
   };
 
   return (
-    <FormContainer>
-      <h1>{vi.register}</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group className='my-2' controlId='name'>
-          <Form.Label>{vi.name}</Form.Label>
-          <Form.Control
-            type='name'
-            placeholder={vi.enterName}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+    <div className='auth-page'>
+      <Container>
+        <Row className='justify-content-center align-items-center min-vh-100'>
+          <Col xs={12} sm={10} md={8} lg={6} className='auth-col'>
+            <div className='auth-card'>
+              <div className='auth-header'>
+                <h1 className='auth-title'>{vi.register}</h1>
+                <p className='auth-subtitle'>アカウント作成して始めましょう</p>
+              </div>
 
-        <Form.Group className='my-2' controlId='email'>
-          <Form.Label>{vi.emailAddress}</Form.Label>
-          <Form.Control
-            type='email'
-            placeholder={vi.enterEmail}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+              <Form onSubmit={submitHandler} className='auth-form'>
+                <Form.Group className='form-group' controlId='name'>
+                  <Form.Label className='form-label'>{vi.name}</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder={vi.enterName}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-        <Form.Group className='my-2' controlId='password'>
-          <Form.Label>{vi.password}</Form.Label>
-          <Form.Control
-            type='password'
-            placeholder={vi.enterPassword}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-        <Form.Group className='my-2' controlId='confirmPassword'>
-          <Form.Label>{vi.confirmPassword}</Form.Label>
-          <Form.Control
-            type='password'
-            placeholder={vi.confirmPassword}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+                <Form.Group className='form-group' controlId='email'>
+                  <Form.Label className='form-label'>
+                    {vi.emailAddress}
+                  </Form.Label>
+                  <Form.Control
+                    type='email'
+                    placeholder={vi.enterEmail}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-        <Button disabled={isLoading} type='submit' variant='primary'>
-          {vi.register}
-        </Button>
+                <Form.Group className='form-group' controlId='password'>
+                  <Form.Label className='form-label'>{vi.password}</Form.Label>
+                  <Form.Control
+                    type='password'
+                    placeholder={vi.enterPassword}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-        {isLoading && <Loader />}
-      </Form>
+                <Form.Group className='form-group' controlId='confirmPassword'>
+                  <Form.Label className='form-label'>
+                    {vi.confirmPassword}
+                  </Form.Label>
+                  <Form.Control
+                    type='password'
+                    placeholder={vi.confirmPassword}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-      <Row className='py-3'>
-        <Col>
-          {vi.alreadyHaveAccount}{' '}
-          <Link to={redirect ? `/login?redirect=${redirect}` : '/login'}>
-            {vi.login}
-          </Link>
-        </Col>
-      </Row>
-    </FormContainer>
+                <Button
+                  disabled={isLoading}
+                  type='submit'
+                  className='auth-submit-btn'
+                >
+                  {isLoading ? <Loader /> : vi.register}
+                </Button>
+              </Form>
+
+              <div className='auth-footer'>
+                <p className='auth-footer-text'>
+                  {vi.alreadyHaveAccount}{' '}
+                  <Link
+                    to={redirect ? `/login?redirect=${redirect}` : '/login'}
+                    className='auth-link'
+                  >
+                    {vi.login}
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 
