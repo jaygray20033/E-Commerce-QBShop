@@ -1,5 +1,4 @@
-'use client';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Container } from 'react-bootstrap';
 import { FaTrash, FaEdit, FaCheck, FaTimes } from 'react-icons/fa';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
@@ -10,6 +9,7 @@ import {
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { vi } from '../../i18n/translations';
+import './UserListScreen.css';
 
 const UserListScreen = () => {
   const { data: users, refetch, isLoading, error } = useGetUsersQuery();
@@ -28,8 +28,11 @@ const UserListScreen = () => {
   };
 
   return (
-    <>
-      <h1>{vi.users}</h1>
+    <Container className='user-list-container'>
+      <div className='admin-section-header'>
+        <h1 className='admin-section-title'>{vi.users}</h1>
+      </div>
+
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -37,59 +40,70 @@ const UserListScreen = () => {
           {error?.data?.message || error.error}
         </Message>
       ) : (
-        <Table striped bordered hover responsive className='table-sm'>
-          <thead>
-            <tr>
-              <th>{vi.id}</th>
-              <th>{vi.name}</th>
-              <th>{vi.email}</th>
-              <th>{vi.isAdmin}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td>{user._id}</td>
-                <td>{user.name}</td>
-                <td>
-                  <a href={`mailto:${user.email}`}>{user.email}</a>
-                </td>
-                <td>
-                  {user.isAdmin ? (
-                    <FaCheck style={{ color: 'green' }} />
-                  ) : (
-                    <FaTimes style={{ color: 'red' }} />
-                  )}
-                </td>
-                <td>
-                  {!user.isAdmin && (
-                    <>
-                      <Button
-                        as={Link}
-                        to={`/admin/user/${user._id}/edit`}
-                        style={{ marginRight: '10px' }}
-                        variant='light'
-                        className='btn-sm'
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant='danger'
-                        className='btn-sm'
-                        onClick={() => deleteHandler(user._id)}
-                      >
-                        <FaTrash style={{ color: 'white' }} />
-                      </Button>
-                    </>
-                  )}
-                </td>
+        <div className='admin-table-wrapper'>
+          <Table striped hover responsive className='admin-users-table'>
+            <thead>
+              <tr>
+                <th>{vi.id}</th>
+                <th>{vi.name}</th>
+                <th>{vi.email}</th>
+                <th>{vi.isAdmin}</th>
+                <th>{vi.actions}</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {users.map((user, index) => (
+                <tr
+                  key={user._id}
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                  className='admin-table-row'
+                >
+                  <td className='user-id-cell'>
+                    {user._id.substring(0, 8)}...
+                  </td>
+                  <td className='user-name-cell'>{user.name}</td>
+                  <td className='user-email-cell'>
+                    <a href={`mailto:${user.email}`}>{user.email}</a>
+                  </td>
+                  <td className='admin-status-cell'>
+                    {user.isAdmin ? (
+                      <span className='admin-badge'>
+                        <FaCheck className='admin-icon' /> Admin
+                      </span>
+                    ) : (
+                      <span className='user-badge'>
+                        <FaTimes className='user-icon' /> User
+                      </span>
+                    )}
+                  </td>
+                  <td className='action-buttons-cell'>
+                    {!user.isAdmin && (
+                      <div className='action-buttons'>
+                        <Button
+                          as={Link}
+                          to={`/admin/user/${user._id}/edit`}
+                          className='btn-edit'
+                          title='Edit user'
+                        >
+                          <FaEdit />
+                        </Button>
+                        <Button
+                          className='btn-delete'
+                          onClick={() => deleteHandler(user._id)}
+                          title='Delete user'
+                        >
+                          <FaTrash />
+                        </Button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
       )}
-    </>
+    </Container>
   );
 };
 
