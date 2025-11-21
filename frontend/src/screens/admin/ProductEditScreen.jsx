@@ -1,21 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Form, Button } from 'react-bootstrap';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
-import FormContainer from '../../components/FormContainer';
 import { toast } from 'react-toastify';
 import {
   useGetProductDetailsQuery,
   useUpdateProductMutation,
   useUploadProductImageMutation,
+  useCreateProductMutation,
 } from '../../slices/productsApiSlice';
 import { vi } from '../../i18n/translations';
+import { FaArrowLeft, FaUpload, FaSave, FaTimes } from 'react-icons/fa';
+import './ProductEditScreen.css';
 
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isNewProduct = location.state?.isNew || productId === 'new';
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState(0);
@@ -30,7 +35,7 @@ const ProductEditScreen = () => {
     isLoading,
     refetch,
     error,
-  } = useGetProductDetailsQuery(productId);
+  } = useGetProductDetailsQuery(productId, { skip: isNewProduct });
 
   const [updateProduct, { isLoading: loadingUpdate }] =
     useUpdateProductMutation();
@@ -38,31 +43,52 @@ const ProductEditScreen = () => {
   const [uploadProductImage, { isLoading: loadingUpload }] =
     useUploadProductImageMutation();
 
-  const navigate = useNavigate();
+  const [createProduct, { isLoading: loadingCreate }] =
+    useCreateProductMutation();
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    if (!name || !price || !brand || !category) {
+      toast.error('Vui lòng điền đầy đủ các trường bắt buộc');
+      return;
+    }
+
     try {
-      await updateProduct({
-        productId,
-        name,
-        price,
-        image,
-        brand,
-        category,
-        description,
-        countInStock,
-      }).unwrap();
-      toast.success(vi.productUpdated);
-      refetch();
-      navigate('/admin/productlist');
+      if (isNewProduct) {
+        const newProduct = await createProduct({
+          name,
+          price,
+          image,
+          brand,
+          category,
+          description,
+          countInStock,
+        }).unwrap();
+        toast.success(vi.productCreated);
+        navigate('/admin/productlist');
+      } else {
+        await updateProduct({
+          productId,
+          name,
+          price,
+          image,
+          brand,
+          category,
+          description,
+          countInStock,
+        }).unwrap();
+        toast.success(vi.productUpdated);
+        refetch();
+        navigate('/admin/productlist');
+      }
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
   };
 
   useEffect(() => {
-    if (product) {
+    if (product && !isNewProduct) {
       setName(product.name);
       setPrice(product.price);
       setImage(product.image);
@@ -71,7 +97,7 @@ const ProductEditScreen = () => {
       setCountInStock(product.countInStock);
       setDescription(product.description);
     }
-  }, [product]);
+  }, [product, isNewProduct]);
 
   const uploadFileHandler = async (e) => {
     const formData = new FormData();
@@ -86,106 +112,221 @@ const ProductEditScreen = () => {
   };
 
   return (
-    <>
-      <Link to='/admin/productlist' className='btn btn-light my-3'>
-        {vi.goBack}
-      </Link>
-      <FormContainer>
-        <h1>{vi.editProduct}</h1>
-        {loadingUpdate && <Loader />}
-        {isLoading ? (
-          <Loader />
-        ) : error ? (
-          <Message variant='danger'>{error.data.message}</Message>
-        ) : (
-          <Form onSubmit={submitHandler}>
-            <Form.Group controlId='name'>
-              <Form.Label>{vi.name}</Form.Label>
-              <Form.Control
-                type='name'
-                placeholder='Nhập tên'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+    <div className='product-edit-wrapper'>
+      {/* Header */}
+      <div className='edit-header-fixed'>
+        <div className='header-content'>
+          <Link to='/admin/productlist' className='back-link-custom'>
+            <FaArrowLeft /> {vi.goBack}
+          </Link>
+          <div className='header-title-group'>
+            <h1 className='edit-title'>
+              {isNewProduct ? 'Tạo Sản Phẩm Mới' : vi.editProduct}
+            </h1>
+            <p className='edit-subtitle'>
+              {isNewProduct
+                ? 'Điền thông tin để tạo sản phẩm mới'
+                : 'Cập nhật thông tin sản phẩm'}
+            </p>
+          </div>
+        </div>
+      </div>
 
-            <Form.Group controlId='price'>
-              <Form.Label>{vi.price}</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Nhập giá'
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+      {loadingCreate || loadingUpdate ? (
+        <Loader />
+      ) : error && !isNewProduct ? (
+        <Message variant='danger'>{error.data.message}</Message>
+      ) : (
+        <div className='edit-content-wrapper'>
+          {/* Form Section - 70% */}
+          <div className='form-section'>
+            <div className='form-card'>
+              <div className='form-card-header'>
+                <h2>Thông Tin Sản Phẩm</h2>
+              </div>
 
-            <Form.Group controlId='image'>
-              <Form.Label>{vi.image}</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Nhập URL hình ảnh'
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-              ></Form.Control>
-              <Form.Control
-                label='Chọn Tệp'
-                onChange={uploadFileHandler}
-                type='file'
-              ></Form.Control>
-              {loadingUpload && <Loader />}
-            </Form.Group>
+              <Form onSubmit={submitHandler} className='product-form'>
+                {/* Tên Sản Phẩm */}
+                <Form.Group controlId='name' className='form-group-custom'>
+                  <Form.Label className='form-label-custom'>
+                    Tên Sản Phẩm <span className='required'>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập tên sản phẩm'
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-            <Form.Group controlId='brand'>
-              <Form.Label>{vi.brand}</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Nhập thương hiệu'
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+                {/* Giá */}
+                <Form.Group controlId='price' className='form-group-custom'>
+                  <Form.Label className='form-label-custom'>
+                    Giá (VND) <span className='required'>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type='number'
+                    placeholder='Nhập giá sản phẩm'
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-            <Form.Group controlId='countInStock'>
-              <Form.Label>{vi.countInStock}</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Nhập số lượng tồn'
-                value={countInStock}
-                onChange={(e) => setCountInStock(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+                {/* Thương Hiệu */}
+                <Form.Group controlId='brand' className='form-group-custom'>
+                  <Form.Label className='form-label-custom'>
+                    Thương Hiệu <span className='required'>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập thương hiệu'
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-            <Form.Group controlId='category'>
-              <Form.Label>{vi.category}</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Nhập danh mục'
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+                {/* Danh Mục */}
+                <Form.Group controlId='category' className='form-group-custom'>
+                  <Form.Label className='form-label-custom'>
+                    Danh Mục <span className='required'>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập danh mục'
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className='form-input'
+                    required
+                  />
+                </Form.Group>
 
-            <Form.Group controlId='description'>
-              <Form.Label>{vi.description}</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Nhập mô tả'
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+                {/* Số Lượng Tồn */}
+                <Form.Group
+                  controlId='countInStock'
+                  className='form-group-custom'
+                >
+                  <Form.Label className='form-label-custom'>
+                    Số Lượng Tồn
+                  </Form.Label>
+                  <Form.Control
+                    type='number'
+                    placeholder='Nhập số lượng tồn'
+                    value={countInStock}
+                    onChange={(e) => setCountInStock(e.target.value)}
+                    className='form-input'
+                  />
+                </Form.Group>
 
-            <Button
-              type='submit'
-              variant='primary'
-              style={{ marginTop: '1rem' }}
-            >
-              {vi.update}
-            </Button>
-          </Form>
-        )}
-      </FormContainer>
-    </>
+                {/* Mô Tả */}
+                <Form.Group
+                  controlId='description'
+                  className='form-group-custom'
+                >
+                  <Form.Label className='form-label-custom'>Mô Tả</Form.Label>
+                  <Form.Control
+                    as='textarea'
+                    rows={4}
+                    placeholder='Nhập mô tả sản phẩm'
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className='form-input'
+                  />
+                </Form.Group>
+
+                {/* Action Buttons */}
+                <div className='form-actions'>
+                  <Button
+                    type='submit'
+                    className='btn-save'
+                    disabled={loadingCreate || loadingUpdate}
+                  >
+                    <FaSave /> {isNewProduct ? 'Tạo Sản Phẩm' : vi.update}
+                  </Button>
+                  <Link to='/admin/productlist' className='btn-cancel'>
+                    <FaTimes /> Hủy
+                  </Link>
+                </div>
+              </Form>
+            </div>
+          </div>
+
+          {/* Image Section - 30% */}
+          <div className='image-section'>
+            <div className='image-card'>
+              <div className='image-card-header'>
+                <h2>Hình Ảnh</h2>
+              </div>
+
+              <div className='image-preview'>
+                {image ? (
+                  <img
+                    src={image || '/placeholder.svg'}
+                    alt={name || 'Product'}
+                    className='preview-img'
+                  />
+                ) : (
+                  <div className='preview-placeholder'>
+                    <svg
+                      width='64'
+                      height='64'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                    >
+                      <rect x='3' y='3' width='18' height='18' rx='2' />
+                      <circle cx='8.5' cy='8.5' r='1.5' />
+                      <path d='M21 15l-5-5L5 21' />
+                    </svg>
+                    <p>Chưa có hình ảnh</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Method */}
+              <div className='upload-section'>
+                <Form.Group controlId='imageUrl' className='form-group-custom'>
+                  <Form.Label className='form-label-custom'>
+                    URL Hình Ảnh
+                  </Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập URL'
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                    className='form-input'
+                  />
+                </Form.Group>
+
+                <div className='upload-divider'>hoặc</div>
+
+                <Form.Group controlId='imageFile' className='form-group-custom'>
+                  <Form.Label className='form-label-custom'>Tải Lên</Form.Label>
+                  <div className='file-upload-wrapper'>
+                    <input
+                      type='file'
+                      onChange={uploadFileHandler}
+                      className='file-input'
+                      accept='image/*'
+                    />
+                    <div className='file-upload-placeholder'>
+                      <FaUpload />
+                      <span>Kéo thả hoặc click</span>
+                    </div>
+                  </div>
+                  {loadingUpload && <Loader />}
+                </Form.Group>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

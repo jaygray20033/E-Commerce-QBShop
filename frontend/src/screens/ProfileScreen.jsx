@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Table, Form, Button, Row, Col } from 'react-bootstrap';
+import { Table, Form, Button } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   FaTimes,
@@ -66,7 +66,7 @@ const ProfileScreen = () => {
         <div className='profile-header-content'>
           <h1 className='profile-title'>{vi.userProfile}</h1>
           <p className='profile-subtitle'>
-            Manage your account information and view your orders
+            Quản lý thông tin tài khoản và xem lịch sử đơn hàng
           </p>
         </div>
         <div className='profile-user-badge'>
@@ -75,8 +75,8 @@ const ProfileScreen = () => {
         </div>
       </div>
 
-      <Row className='profile-content'>
-        <Col md={3} className='profile-section'>
+      <div className='profile-content'>
+        <div className='profile-section'>
           <div className='profile-form-card'>
             <div className='form-header'>
               <h2>{vi.userProfile}</h2>
@@ -152,9 +152,9 @@ const ProfileScreen = () => {
               </Button>
             </Form>
           </div>
-        </Col>
+        </div>
 
-        <Col md={9} className='profile-section'>
+        <div className='orders-section'>
           <div className='orders-card'>
             <div className='orders-header'>
               <h2>{vi.myOrders}</h2>
@@ -169,7 +169,7 @@ const ProfileScreen = () => {
               </Message>
             ) : orders.length === 0 ? (
               <div className='empty-orders'>
-                <p>You have no orders yet.</p>
+                <p>Bạn chưa có đơn hàng nào.</p>
               </div>
             ) : (
               <div className='orders-table-container'>
@@ -234,8 +234,8 @@ const ProfileScreen = () => {
               </div>
             )}
           </div>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };

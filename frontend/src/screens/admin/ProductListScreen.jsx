@@ -1,8 +1,8 @@
 'use client';
 
-import { Table, Button, Row, Col } from 'react-bootstrap';
+import { Table, Button, Row, Col, Modal } from 'react-bootstrap';
 import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
 import Paginate from '../../components/Paginate';
@@ -14,10 +14,13 @@ import {
 import { toast } from 'react-toastify';
 import { vi } from '../../i18n/translations';
 import { formatPrice } from '../../utils/formatPrice';
+import { useState } from 'react';
 import './ProductListScreen.css';
 
 const ProductListScreen = () => {
   const { pageNumber } = useParams();
+  const navigate = useNavigate();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const { data, isLoading, error, refetch } = useGetProductsQuery({
     pageNumber,
@@ -41,20 +44,35 @@ const ProductListScreen = () => {
   const [createProduct, { isLoading: loadingCreate }] =
     useCreateProductMutation();
 
-  const createProductHandler = async () => {
-    if (window.confirm(vi.confirmCreate)) {
-      try {
-        await createProduct();
-        refetch();
-        toast.success(vi.productCreated);
-      } catch (err) {
-        toast.error(err?.data?.message || err.error);
-      }
-    }
+  const createProductHandler = () => {
+    setShowConfirm(true);
+  };
+
+  const handleConfirmCreate = () => {
+    setShowConfirm(false);
+    navigate('/admin/product/new/edit', { state: { isNew: true } });
   };
 
   return (
     <>
+      {/* Create Product Confirmation Modal */}
+      <Modal show={showConfirm} onHide={() => setShowConfirm(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Tạo Sản Phẩm Mới</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Bạn có muốn tạo một sản phẩm mới không?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='secondary' onClick={() => setShowConfirm(false)}>
+            Hủy
+          </Button>
+          <Button variant='primary' onClick={handleConfirmCreate}>
+            Có, Tạo Sản Phẩm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Row className='align-items-center admin-header'>
         <Col>
           <h1 className='admin-title'>{vi.products}</h1>
