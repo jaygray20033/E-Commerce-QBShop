@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import FormContainer from '../components/FormContainer';
 import CheckoutSteps from '../components/CheckoutSteps';
 import { saveShippingAddress } from '../slices/cartSlice';
 import { vi } from '../i18n/translations';
+import { FaArrowLeft } from 'react-icons/fa';
+import './ShippingScreen.css';
 
 const ShippingScreen = () => {
   const cart = useSelector((state) => state.cart);
@@ -30,59 +31,76 @@ const ShippingScreen = () => {
   };
 
   return (
-    <FormContainer>
+    <div className='shipping-container'>
+      <div className='shipping-header'>
+        <button className='back-button' onClick={() => navigate('/cart')}>
+          <FaArrowLeft /> {vi.goBack}
+        </button>
+        <div>
+          <h1 className='page-title'>{vi.shipping}</h1>
+        </div>
+      </div>
+
       <CheckoutSteps step1 step2 />
-      <h1>{vi.shipping}</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group className='my-2' controlId='address'>
-          <Form.Label>{vi.address}</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder={vi.enterAddress}
-            value={address}
-            required
-            onChange={(e) => setAddress(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
 
-        <Form.Group className='my-2' controlId='city'>
-          <Form.Label>{vi.city}</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder={vi.enterCity}
-            value={city}
-            required
-            onChange={(e) => setCity(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+      <div className='shipping-form-wrapper'>
+        <div className='shipping-form-card'>
+          <form onSubmit={submitHandler}>
+            <div className='form-group-custom'>
+              <label className='form-label'>{vi.address}</label>
+              <input
+                type='text'
+                placeholder={vi.enterAddress}
+                value={address}
+                required
+                onChange={(e) => setAddress(e.target.value)}
+                className='form-input'
+              />
+            </div>
 
-        <Form.Group className='my-2' controlId='postalCode'>
-          <Form.Label>{vi.postalCode}</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder={vi.enterPostalCode}
-            value={postalCode}
-            required
-            onChange={(e) => setPostalCode(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+            <div className='form-group-custom'>
+              <label className='form-label'>{vi.city}</label>
+              <input
+                type='text'
+                placeholder={vi.enterCity}
+                value={city}
+                required
+                onChange={(e) => setCity(e.target.value)}
+                className='form-input'
+              />
+            </div>
 
-        <Form.Group className='my-2' controlId='country'>
-          <Form.Label>{vi.country}</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder={vi.enterCountry}
-            value={country}
-            required
-            onChange={(e) => setCountry(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+            <div className='form-group-custom'>
+              <label className='form-label'>{vi.postalCode}</label>
+              <input
+                type='text'
+                placeholder={vi.enterPostalCode}
+                value={postalCode}
+                required
+                onChange={(e) => setPostalCode(e.target.value)}
+                className='form-input'
+              />
+            </div>
 
-        <Button type='submit' variant='primary'>
-          {vi.continue}
-        </Button>
-      </Form>
-    </FormContainer>
+            <div className='form-group-custom'>
+              <label className='form-label'>{vi.country}</label>
+              <input
+                type='text'
+                placeholder={vi.enterCountry}
+                value={country}
+                required
+                onChange={(e) => setCountry(e.target.value)}
+                className='form-input'
+              />
+            </div>
+
+            <Button type='submit' className='submit-btn'>
+              {vi.continue}
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 

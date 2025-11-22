@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
+import { Button, Row, Col, Image, Card } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import { FaArrowLeft } from 'react-icons/fa';
 import Message from '../components/Message';
 import CheckoutSteps from '../components/CheckoutSteps';
 import Loader from '../components/Loader';
@@ -12,12 +13,11 @@ import { useCreateOrderMutation } from '../slices/ordersApiSlice';
 import { clearCartItems } from '../slices/cartSlice';
 import { vi } from '../i18n/translations';
 import { formatPrice } from '../utils/formatPrice';
+import './PlaceOrderScreen.css';
 
 const PlaceOrderScreen = () => {
   const navigate = useNavigate();
-
   const cart = useSelector((state) => state.cart);
-
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
 
   useEffect(() => {
@@ -29,6 +29,7 @@ const PlaceOrderScreen = () => {
   }, [cart.paymentMethod, cart.shippingAddress.address, navigate]);
 
   const dispatch = useDispatch();
+
   const placeOrderHandler = async () => {
     try {
       const res = await createOrder({
@@ -48,37 +49,55 @@ const PlaceOrderScreen = () => {
   };
 
   return (
-    <>
+    <div className='placeorder-container'>
+      <div className='placeorder-header'>
+        <button className='back-button' onClick={() => navigate('/payment')}>
+          <FaArrowLeft /> {vi.goBack}
+        </button>
+        <div>
+          <h1 className='page-title'>{vi.orderSummary}</h1>
+        </div>
+      </div>
+
       <CheckoutSteps step1 step2 step3 step4 />
-      <Row>
-        <Col md={8}>
-          <ListGroup variant='flush'>
-            <ListGroup.Item>
-              <h2>{vi.shipping}</h2>
-              <p>
-                <strong>{vi.address}:</strong>
-                {cart.shippingAddress.address}, {cart.shippingAddress.city}{' '}
-                {cart.shippingAddress.postalCode},{' '}
-                {cart.shippingAddress.country}
-              </p>
-            </ListGroup.Item>
 
-            <ListGroup.Item>
-              <h2>{vi.paymentMethod}</h2>
-              <strong>{vi.method}: </strong>
-              {cart.paymentMethod}
-            </ListGroup.Item>
+      <Row className='placeorder-content'>
+        <Col lg={8}>
+          <div className='placeorder-details'>
+            <div className='detail-card'>
+              <h2 className='detail-title'>{vi.shipping}</h2>
+              <div className='detail-content'>
+                <p>
+                  <strong>{vi.address}:</strong> {cart.shippingAddress.address},
+                  {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{' '}
+                  {cart.shippingAddress.country}
+                </p>
+              </div>
+            </div>
 
-            <ListGroup.Item>
-              <h2>{vi.orderItems}</h2>
-              {cart.cartItems.length === 0 ? (
-                <Message>{vi.emptyCart}</Message>
-              ) : (
-                <ListGroup variant='flush'>
-                  {cart.cartItems.map((item, index) => (
-                    <ListGroup.Item key={index}>
-                      <Row>
-                        <Col md={1}>
+            <div className='detail-card'>
+              <h2 className='detail-title'>{vi.paymentMethod}</h2>
+              <div className='detail-content'>
+                <p>
+                  <strong>{vi.method}:</strong> {cart.paymentMethod}
+                </p>
+              </div>
+            </div>
+
+            <div className='detail-card'>
+              <h2 className='detail-title'>{vi.orderItems}</h2>
+              <div className='order-items-list'>
+                {cart.cartItems.length === 0 ? (
+                  <Message>{vi.emptyCart}</Message>
+                ) : (
+                  cart.cartItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className='order-item'
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <Row className='align-items-center'>
+                        <Col md={2}>
                           <Image
                             src={item.image || '/placeholder.svg'}
                             alt={item.name}
@@ -86,74 +105,85 @@ const PlaceOrderScreen = () => {
                             rounded
                           />
                         </Col>
-                        <Col>
-                          <Link to={`/product/${item.product}`}>
+                        <Col md={5}>
+                          <Link
+                            to={`/product/${item.product}`}
+                            className='item-link'
+                          >
                             {item.name}
                           </Link>
                         </Col>
-                        <Col md={4}>
-                          {item.qty} x {formatPrice(item.price)} ={' '}
-                          {formatPrice(item.qty * item.price)}
+                        <Col md={5}>
+                          <div className='item-pricing'>
+                            {item.qty} × {formatPrice(item.price)} ={' '}
+                            <strong>
+                              {formatPrice(item.qty * item.price)}
+                            </strong>
+                          </div>
                         </Col>
                       </Row>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </ListGroup.Item>
-          </ListGroup>
-        </Col>
-        <Col md={4}>
-          <Card>
-            <ListGroup variant='flush'>
-              <ListGroup.Item>
-                <h2>{vi.orderSummary}</h2>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>{vi.items}</Col>
-                  <Col>{formatPrice(cart.itemsPrice)}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>{vi.shipping}</Col>
-                  <Col>{formatPrice(cart.shippingPrice)}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>{vi.tax}</Col>
-                  <Col>{formatPrice(cart.taxPrice)}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>{vi.total}</Col>
-                  <Col>{formatPrice(cart.totalPrice)}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                {error && (
-                  <Message variant='danger'>{error.data.message}</Message>
+                    </div>
+                  ))
                 )}
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Button
-                  type='button'
-                  className='btn-block'
-                  disabled={cart.cartItems === 0}
-                  onClick={placeOrderHandler}
-                >
-                  {vi.placeOrder}
-                </Button>
-                {isLoading && <Loader />}
-              </ListGroup.Item>
-            </ListGroup>
+              </div>
+            </div>
+          </div>
+        </Col>
+
+        <Col lg={4}>
+          <Card className='order-summary-card'>
+            <Card.Body>
+              <h2 className='summary-title'>{vi.orderSummary}</h2>
+
+              <div className='summary-row'>
+                <span>{vi.items}</span>
+                <span className='summary-value'>
+                  {formatPrice(cart.itemsPrice)}
+                </span>
+              </div>
+
+              <div className='summary-row'>
+                <span>{vi.shipping}</span>
+                <span className='summary-value'>
+                  {formatPrice(cart.shippingPrice)}
+                </span>
+              </div>
+
+              <div className='summary-row'>
+                <span>{vi.tax}</span>
+                <span className='summary-value'>
+                  {formatPrice(cart.taxPrice)}
+                </span>
+              </div>
+
+              <div className='summary-divider'></div>
+
+              <div className='summary-total'>
+                <span>{vi.total}</span>
+                <span className='total-amount'>
+                  {formatPrice(cart.totalPrice)}
+                </span>
+              </div>
+
+              {error && (
+                <Message variant='danger' className='mt-3'>
+                  {error.data?.message || error.message}
+                </Message>
+              )}
+
+              <Button
+                type='button'
+                className='place-order-btn'
+                disabled={cart.cartItems.length === 0 || isLoading}
+                onClick={placeOrderHandler}
+              >
+                {isLoading ? <Loader /> : vi.placeOrder}
+              </Button>
+            </Card.Body>
           </Card>
         </Col>
       </Row>
-    </>
+    </div>
   );
 };
 
