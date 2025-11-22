@@ -30,18 +30,12 @@ import './ProductScreen.css';
 
 const ProductScreen = () => {
   const { id: productId } = useParams();
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [qty, setQty] = useState(1);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
-
-  const addToCartHandler = () => {
-    dispatch(addToCart({ ...product, qty }));
-    navigate('/cart');
-  };
 
   const {
     data: product,
@@ -51,13 +45,16 @@ const ProductScreen = () => {
   } = useGetProductDetailsQuery(productId);
 
   const { userInfo } = useSelector((state) => state.auth);
-
   const [createReview, { isLoading: loadingProductReview }] =
     useCreateReviewMutation();
 
+  const addToCartHandler = () => {
+    dispatch(addToCart({ ...product, qty }));
+    navigate('/cart');
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
-
     try {
       await createReview({
         productId,
@@ -66,6 +63,8 @@ const ProductScreen = () => {
       }).unwrap();
       refetch();
       toast.success('Nhận xét đã được tạo thành công');
+      setRating(0);
+      setComment('');
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -73,14 +72,21 @@ const ProductScreen = () => {
 
   return (
     <>
-      <Container>
-        <Link className='back-button' to='/'>
+      <Container fluid className='px-0 px-md-3'>
+        {' '}
+        {/* Loại bỏ padding ngang thừa trên mobile */}
+        {/* Nút quay lại */}
+        <Link
+          className='back-button d-inline-flex align-items-center mb-4'
+          to='/'
+        >
           <svg
-            width='18'
-            height='18'
+            width='20'
+            height='20'
             viewBox='0 0 24 24'
             fill='none'
             stroke='currentColor'
+            className='me-2'
           >
             <polyline points='15 18 9 12 15 6'></polyline>
           </svg>
@@ -96,45 +102,58 @@ const ProductScreen = () => {
           <>
             <Meta title={product.name} description={product.description} />
 
-            <div className='product-details-header'>
-              <h1 className='page-title'>{product.name}</h1>
+            {/* Tiêu đề + rating */}
+            <div className='mb-5 text-center text-md-start'>
+              <h1 className='page-title display-5 fw-bold mb-3'>
+                {product.name}
+              </h1>
               <Rating
                 value={product.rating}
                 text={`${product.numReviews} ${vi.reviews}`}
               />
             </div>
 
-            <Row className='product-details-container'>
-              <Col md={6} className='product-image-col'>
-                <div className='product-image-wrapper'>
+            {/* 2 CỘT CHÍNH - CHIẾM FULL NGANG, BẰNG NHAU */}
+            <Row className='g-4 g-xl-5'>
+              {' '}
+              {/* Khoảng cách đều, responsive */}
+              {/* CỘT TRÁI: Ảnh + Thông tin sản phẩm */}
+              <Col lg={6} className='d-flex flex-column'>
+                {/* Ảnh sản phẩm */}
+                <div className='product-image-wrapper mb-4 flex-grow-0'>
                   <Image
                     src={product.image || '/placeholder.svg'}
                     alt={product.name}
                     fluid
+                    rounded
                     className='product-detail-image'
                   />
                 </div>
-              </Col>
-              <Col md={6} className='product-info-col'>
-                <Card className='product-info-card'>
+
+                {/* Card thông tin */}
+                <Card className='product-info-card border-0 shadow-sm flex-grow-1'>
                   <ListGroup variant='flush'>
-                    <ListGroup.Item className='info-item'>
-                      <div className='info-label'>{vi.description}</div>
-                      <p className='info-description'>{product.description}</p>
+                    <ListGroup.Item className='p-4 border-bottom'>
+                      <h5 className='text-muted text-uppercase small fw-semibold'>
+                        {vi.description}
+                      </h5>
+                      <p className='mt-2 mb-0 text-dark'>
+                        {product.description}
+                      </p>
                     </ListGroup.Item>
-                    <ListGroup.Item className='info-item'>
-                      <div className='price-section'>
-                        <div className='info-label'>{vi.price}</div>
-                        <div className='product-price'>
-                          {formatPrice(product.price)}
+
+                    <ListGroup.Item className='p-4 border-bottom'>
+                      <div className='d-flex justify-content-between align-items-end'>
+                        <div>
+                          <div className='text-muted text-uppercase small fw-semibold'>
+                            {vi.price}
+                          </div>
+                          <div className='product-price display-6 fw-bold mt-1'>
+                            {formatPrice(product.price)}
+                          </div>
                         </div>
-                      </div>
-                    </ListGroup.Item>
-                    <ListGroup.Item className='info-item'>
-                      <div className='stock-section'>
-                        <div className='info-label'>{vi.countInStock}</div>
                         <span
-                          className={`stock-badge ${
+                          className={`stock-badge px-3 py-2 ${
                             product.countInStock > 0
                               ? 'in-stock'
                               : 'out-of-stock'
@@ -147,16 +166,16 @@ const ProductScreen = () => {
                       </div>
                     </ListGroup.Item>
 
-                    {/* Qty Select */}
                     {product.countInStock > 0 && (
-                      <ListGroup.Item className='info-item'>
+                      <ListGroup.Item className='p-4 border-bottom'>
                         <div className='quantity-section'>
-                          <label className='info-label'>{vi.quantity}</label>
-                          <Form.Control
-                            as='select'
+                          <label className='text-muted text-uppercase small fw-semibold d-block mb-2'>
+                            {vi.quantity}
+                          </label>
+                          <Form.Select
                             value={qty}
                             onChange={(e) => setQty(Number(e.target.value))}
-                            className='qty-select'
+                            className='qty-select w-auto'
                           >
                             {[...Array(product.countInStock).keys()].map(
                               (x) => (
@@ -165,17 +184,16 @@ const ProductScreen = () => {
                                 </option>
                               )
                             )}
-                          </Form.Control>
+                          </Form.Select>
                         </div>
                       </ListGroup.Item>
                     )}
 
-                    <ListGroup.Item className='info-item action-item'>
+                    <ListGroup.Item className='p-4'>
                       <Button
-                        className='add-to-cart-btn'
-                        type='button'
-                        disabled={product.countInStock === 0}
                         onClick={addToCartHandler}
+                        disabled={product.countInStock === 0}
+                        className='add-to-cart-btn w-100 py-3 fw-bold'
                       >
                         {vi.addToCart}
                       </Button>
@@ -183,101 +201,95 @@ const ProductScreen = () => {
                   </ListGroup>
                 </Card>
               </Col>
+              {/* CỘT PHẢI: Form Viết Nhận Xét */}
+              <Col lg={6} className='d-flex'>
+                <Card className='review-form-card border-0 shadow-sm w-100'>
+                  <Card.Body className='p-4 p-xl-5'>
+                    <h3 className='form-title mb-4'>{vi.writeReview}</h3>
+
+                    {loadingProductReview && <Loader />}
+
+                    {userInfo ? (
+                      <Form onSubmit={submitHandler}>
+                        <Form.Group className='mb-4' controlId='rating'>
+                          <Form.Label className='form-label'>
+                            {vi.rating}
+                          </Form.Label>
+                          <Form.Select
+                            required
+                            value={rating}
+                            onChange={(e) => setRating(Number(e.target.value))}
+                            className='form-control-custom'
+                          >
+                            <option value=''>{vi.selectRating}</option>
+                            <option value='1'>1 - Tệ</option>
+                            <option value='2'>2 - Trung bình</option>
+                            <option value='3'>3 - Tốt</option>
+                            <option value='4'>4 - Rất tốt</option>
+                            <option value='5'>5 - Xuất sắc</option>
+                          </Form.Select>
+                        </Form.Group>
+
+                        <Form.Group className='mb-4' controlId='comment'>
+                          <Form.Label className='form-label'>
+                            {vi.comment}
+                          </Form.Label>
+                          <Form.Control
+                            as='textarea'
+                            rows={5}
+                            required
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            className='form-control-custom'
+                            placeholder='Chia sẻ trải nghiệm của bạn...'
+                          />
+                        </Form.Group>
+
+                        <Button
+                          type='submit'
+                          disabled={loadingProductReview}
+                          className='submit-review-btn w-100 py-3 fw-bold'
+                        >
+                          {vi.submit}
+                        </Button>
+                      </Form>
+                    ) : (
+                      <Message variant='info'>
+                        {vi.signInToReview}{' '}
+                        <Link to='/login' className='text-decoration-underline'>
+                          {vi.signin}
+                        </Link>
+                      </Message>
+                    )}
+                  </Card.Body>
+                </Card>
+              </Col>
             </Row>
 
-            <div className='reviews-section'>
-              <div className='reviews-header'>
-                <h2 className='section-title'>{vi.reviews}</h2>
-              </div>
-              <Row>
-                <Col md={6}>
-                  <div className='reviews-list'>
-                    {product.reviews.length === 0 && (
-                      <Message>{vi.noReviews}</Message>
-                    )}
-                    <ListGroup variant='flush' className='reviews-listgroup'>
-                      {product.reviews.map((review) => (
-                        <ListGroup.Item
-                          key={review._id}
-                          className='review-item'
-                        >
-                          <div className='review-header'>
-                            <strong className='review-author'>
-                              {review.name}
-                            </strong>
-                            <span className='review-date'>
-                              {review.createdAt.substring(0, 10)}
-                            </span>
-                          </div>
-                          <Rating value={review.rating} />
-                          <p className='review-text'>{review.comment}</p>
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  </div>
-                </Col>
-                <Col md={6}>
-                  <Card className='review-form-card'>
-                    <Card.Body>
-                      <h3 className='form-title'>{vi.writeReview}</h3>
-
-                      {loadingProductReview && <Loader />}
-
-                      {userInfo ? (
-                        <Form onSubmit={submitHandler}>
-                          <Form.Group className='form-group' controlId='rating'>
-                            <Form.Label className='form-label'>
-                              {vi.rating}
-                            </Form.Label>
-                            <Form.Control
-                              as='select'
-                              required
-                              value={rating}
-                              onChange={(e) => setRating(e.target.value)}
-                              className='form-control-custom'
-                            >
-                              <option value=''>{vi.selectRating}</option>
-                              <option value='1'>1 - Tệ</option>
-                              <option value='2'>2 - Trung Bình</option>
-                              <option value='3'>3 - Tốt</option>
-                              <option value='4'>4 - Rất Tốt</option>
-                              <option value='5'>5 - Xuất Sắc</option>
-                            </Form.Control>
-                          </Form.Group>
-                          <Form.Group
-                            className='form-group'
-                            controlId='comment'
-                          >
-                            <Form.Label className='form-label'>
-                              {vi.comment}
-                            </Form.Label>
-                            <Form.Control
-                              as='textarea'
-                              row='3'
-                              required
-                              value={comment}
-                              onChange={(e) => setComment(e.target.value)}
-                              className='form-control-custom'
-                            ></Form.Control>
-                          </Form.Group>
-                          <Button
-                            disabled={loadingProductReview}
-                            type='submit'
-                            className='submit-review-btn'
-                          >
-                            {vi.submit}
-                          </Button>
-                        </Form>
-                      ) : (
-                        <Message>
-                          {vi.signInToReview}{' '}
-                          <Link to='/login'>{vi.signin}</Link>
-                        </Message>
-                      )}
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
+            {/* Phần đánh giá cũ (giữ nguyên hoặc thu gọn tùy ý) */}
+            <div className='mt-5 pt-5 border-top'>
+              <h2 className='section-title mb-4'>{vi.reviews}</h2>
+              {product.reviews.length === 0 ? (
+                <Message>{vi.noReviews}</Message>
+              ) : (
+                <ListGroup variant='flush'>
+                  {product.reviews.map((review) => (
+                    <ListGroup.Item
+                      key={review._id}
+                      className='review-item p-4 mb-3 border rounded'
+                    >
+                      <div className='d-flex justify-content-between align-items-start mb-2'>
+                        <strong>{review.name}</strong>
+                        <small className='text-muted'>
+                          {review.createdAt.substring(0, 10)}
+                        </small>
+                      </div>
+                      <Rating value={review.rating} />
+                      <p className='mt-3 mb-0 text-muted'>{review.comment}</p>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              )}
             </div>
           </>
         )}
