@@ -17,19 +17,56 @@ import { formatPrice } from '../../utils/formatPrice';
 import { useState } from 'react';
 import './ProductListScreen.css';
 
+const compressImage = (
+  base64String,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.7
+) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = base64String;
+  });
+};
+
+const initialFormState = {
+  name: '',
+  price: 0,
+  brand: '',
+  category: '',
+  countInStock: 0,
+  description: '',
+  image: '',
+};
+
 const ProductListScreen = () => {
   const { pageNumber } = useParams();
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    price: 0,
-    brand: '',
-    category: '',
-    countInStock: 0,
-    description: '',
-    image: '',
-  });
+  const [formData, setFormData] = useState(initialFormState);
   const [imagePreview, setImagePreview] = useState('');
 
   const { data, isLoading, error, refetch } = useGetProductsQuery({
@@ -55,6 +92,8 @@ const ProductListScreen = () => {
     useCreateProductMutation();
 
   const createProductHandler = () => {
+    setFormData(initialFormState);
+    setImagePreview('');
     setShowCreateModal(true);
   };
 
@@ -81,15 +120,7 @@ const ProductListScreen = () => {
       setShowCreateModal(false);
       refetch();
       // Reset form
-      setFormData({
-        name: '',
-        price: 0,
-        brand: '',
-        category: '',
-        countInStock: 0,
-        description: '',
-        image: '',
-      });
+      setFormData(initialFormState);
       setImagePreview('');
     } catch (err) {
       toast.error(err?.data?.message || err.error);
@@ -105,26 +136,37 @@ const ProductListScreen = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData((prev) => ({
-          ...prev,
-          image: reader.result,
-        }));
+      reader.onloadend = async () => {
+        try {
+          const compressedImage = await compressImage(reader.result);
+          setImagePreview(compressedImage);
+          setFormData((prev) => ({
+            ...prev,
+            image: compressedImage,
+          }));
+        } catch (err) {
+          toast.error('Lỗi khi xử lý hình ảnh');
+        }
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleModalClose = () => {
+    setShowCreateModal(false);
+    setFormData(initialFormState);
+    setImagePreview('');
   };
 
   return (
     <>
       <Modal
         show={showCreateModal}
-        onHide={() => setShowCreateModal(false)}
+        onHide={handleModalClose}
         centered
         size='lg'
         className='create-product-modal'
@@ -297,7 +339,7 @@ const ProductListScreen = () => {
               <Button
                 variant='light'
                 className='btn-cancel-modern'
-                onClick={() => setShowCreateModal(false)}
+                onClick={handleModalClose}
               >
                 Hủy
               </Button>
