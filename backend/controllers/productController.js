@@ -47,16 +47,26 @@ const getProductById = asyncHandler(async (req, res) => {
 // @route   POST /api/products
 // @access  Private/Admin
 const createProduct = asyncHandler(async (req, res) => {
+  const { name, price, brand, category, countInStock, description, image } =
+    req.body;
+
+  if (!name || !price || !brand || !category || !description || !image) {
+    res.status(400);
+    throw new Error(
+      'Please provide all required fields: name, price, brand, category, description, image'
+    );
+  }
+
   const product = new Product({
-    name: 'Sample name',
-    price: 0,
+    name,
+    price: Number(price),
     user: req.user._id,
-    image: '/images/sample.jpg',
-    brand: 'Sample brand',
-    category: 'Sample category',
-    countInStock: 0,
+    image,
+    brand,
+    category,
+    countInStock: Number(countInStock) || 0,
     numReviews: 0,
-    description: 'Sample description',
+    description,
   });
 
   const createdProduct = await product.save();
