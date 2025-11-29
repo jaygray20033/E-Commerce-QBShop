@@ -89,28 +89,6 @@ npm start
 
 The application will open at `http://localhost:3000`
 
-## 📋 Project Structure
-
-\`\`\`
-QBShop/
-├── backend/
-│   ├── config/              # Database configuration
-│   ├── controllers/         # Request handlers
-│   ├── models/              # MongoDB schemas
-│   ├── routes/              # API endpoints
-│   ├── middleware/          # Custom middleware
-│   ├── utils/               # Utility functions
-│   └── server.js            # Express server entry point
-└── frontend/
-    ├── src/
-    │   ├── components/      # Reusable components
-    │   ├── screens/         # Page components
-    │   ├── slices/          # Redux store slices
-    │   ├── utils/           # Utility functions
-    │   └── App.js           # Main app component
-    └── public/              # Static files
-\`\`\`
-
 ## 📡 API Endpoints
 
 ### Authentication
