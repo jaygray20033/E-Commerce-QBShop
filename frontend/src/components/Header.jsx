@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice';
 import { logout } from '../slices/authSlice';
 import SearchBox from './SearchBox';
-import logo from '../assets/logo.png';
 import { resetCart } from '../slices/cartSlice';
 import { vi } from '../i18n/translations';
 import './Header.css';
@@ -55,6 +54,12 @@ const Header = () => {
     e.preventDefault();
     setDropdownOpen(false);
     navigate('/profile');
+  };
+
+  const handleNavigateToDashboard = (e) => {
+    e.preventDefault();
+    setDropdownOpen(false);
+    navigate('/admin/dashboard');
   };
 
   const handleNavigateToProductList = (e) => {
@@ -151,6 +156,13 @@ const Header = () => {
                   </button>
                   {userInfo.isAdmin && (
                     <>
+                      <hr className='dropdown-divider' />
+                      <button
+                        onClick={handleNavigateToDashboard}
+                        className='dropdown-item'
+                      >
+                        Dashboard
+                      </button>
                       <button
                         onClick={handleNavigateToProductList}
                         className='dropdown-item'

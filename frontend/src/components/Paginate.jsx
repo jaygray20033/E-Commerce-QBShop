@@ -1,11 +1,9 @@
 'use client';
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Paginate.css';
 
 const Paginate = ({ pages, page, isAdmin = false, keyword = '' }) => {
-  const location = useLocation();
-
   if (pages <= 1) {
     return null;
   }
