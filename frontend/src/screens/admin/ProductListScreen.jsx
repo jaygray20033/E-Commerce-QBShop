@@ -1,7 +1,15 @@
 'use client';
 
-import { Table, Button, Row, Col, Modal, Form } from 'react-bootstrap';
-import { FaEdit, FaPlus, FaTrash, FaUpload } from 'react-icons/fa';
+import { Table, Button, Row, Col, Modal, Form, Badge } from 'react-bootstrap';
+import {
+  FaEdit,
+  FaPlus,
+  FaTrash,
+  FaUpload,
+  FaFileExcel,
+  FaDownload,
+  FaTimes,
+} from 'react-icons/fa';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
@@ -10,11 +18,14 @@ import {
   useGetProductsQuery,
   useDeleteProductMutation,
   useCreateProductMutation,
+  useCreateBulkProductsMutation,
+  useImportProductsFromExcelMutation,
 } from '../../slices/productsApiSlice';
 import { toast } from 'react-toastify';
 import { vi } from '../../i18n/translations';
 import { formatPrice } from '../../utils/formatPrice';
 import { useState } from 'react';
+import * as XLSX from 'xlsx';
 import './ProductListScreen.css';
 
 const compressImage = (
@@ -66,8 +77,16 @@ const ProductListScreen = () => {
   const { pageNumber } = useParams();
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [showExcelModal, setShowExcelModal] = useState(false);
   const [formData, setFormData] = useState(initialFormState);
   const [imagePreview, setImagePreview] = useState('');
+  const [bulkProducts, setBulkProducts] = useState([
+    { ...initialFormState, imagePreview: '' },
+  ]);
+  const [excelProducts, setExcelProducts] = useState([]);
+  const [excelFileName, setExcelFileName] = useState('');
+  const [excelImages, setExcelImages] = useState({});
 
   const { data, isLoading, error, refetch } = useGetProductsQuery({
     pageNumber,
@@ -75,6 +94,12 @@ const ProductListScreen = () => {
 
   const [deleteProduct, { isLoading: loadingDelete }] =
     useDeleteProductMutation();
+
+  const [createBulkProducts, { isLoading: loadingBulk }] =
+    useCreateBulkProductsMutation();
+
+  const [importProductsFromExcel, { isLoading: loadingExcel }] =
+    useImportProductsFromExcelMutation();
 
   const deleteHandler = async (id) => {
     if (window.confirm(vi.confirmDelete)) {
@@ -160,6 +185,188 @@ const ProductListScreen = () => {
     setShowCreateModal(false);
     setFormData(initialFormState);
     setImagePreview('');
+  };
+
+  // Bulk Products Handlers
+  const handleBulkModalOpen = () => {
+    setBulkProducts([{ ...initialFormState, imagePreview: '' }]);
+    setShowBulkModal(true);
+  };
+
+  const handleBulkModalClose = () => {
+    setShowBulkModal(false);
+    setBulkProducts([{ ...initialFormState, imagePreview: '' }]);
+  };
+
+  const handleAddBulkProduct = () => {
+    setBulkProducts([
+      ...bulkProducts,
+      { ...initialFormState, imagePreview: '' },
+    ]);
+  };
+
+  const handleRemoveBulkProduct = (index) => {
+    if (bulkProducts.length > 1) {
+      setBulkProducts(bulkProducts.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleBulkProductChange = (index, field, value) => {
+    const updated = [...bulkProducts];
+    updated[index][field] =
+      field === 'price' || field === 'countInStock' ? Number(value) : value;
+    setBulkProducts(updated);
+  };
+
+  const handleBulkImageChange = async (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const compressedImage = await compressImage(reader.result);
+          const updated = [...bulkProducts];
+          updated[index].image = compressedImage;
+          updated[index].imagePreview = compressedImage;
+          setBulkProducts(updated);
+        } catch (err) {
+          toast.error('Lỗi khi xử lý hình ảnh');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBulkSubmit = async (e) => {
+    e.preventDefault();
+    const validProducts = bulkProducts
+      .filter(
+        (p) => p.name && p.price && p.brand && p.category && p.description
+      )
+      .map(({ imagePreview, ...rest }) => rest);
+
+    if (validProducts.length === 0) {
+      toast.error(vi.noProductsToCreate);
+      return;
+    }
+
+    try {
+      const result = await createBulkProducts({
+        products: validProducts,
+      }).unwrap();
+      toast.success(result.message);
+      setShowBulkModal(false);
+      setBulkProducts([{ ...initialFormState, imagePreview: '' }]);
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
+  };
+
+  // Excel Import Handlers
+  const handleExcelModalOpen = () => {
+    setExcelProducts([]);
+    setExcelFileName('');
+    setExcelImages({});
+    setShowExcelModal(true);
+  };
+
+  const handleExcelModalClose = () => {
+    setShowExcelModal(false);
+    setExcelProducts([]);
+    setExcelFileName('');
+    setExcelImages({});
+  };
+
+  const handleExcelFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setExcelFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const bstr = evt.target.result;
+          const wb = XLSX.read(bstr, { type: 'binary' });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          const data = XLSX.utils.sheet_to_json(ws);
+          setExcelProducts(data);
+          setExcelImages({});
+          toast.success(`Đã đọc ${data.length} sản phẩm từ file Excel`);
+        } catch (err) {
+          toast.error('Lỗi đọc file Excel');
+        }
+      };
+      reader.readAsBinaryString(file);
+    }
+  };
+
+  const handleExcelProductImageChange = async (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const compressedImage = await compressImage(reader.result);
+          setExcelImages((prev) => ({
+            ...prev,
+            [index]: compressedImage,
+          }));
+        } catch (err) {
+          toast.error('Lỗi khi xử lý hình ảnh');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleExcelImport = async () => {
+    if (excelProducts.length === 0) {
+      toast.error('Chưa có dữ liệu từ file Excel');
+      return;
+    }
+
+    const productsWithImages = excelProducts.map((product, index) => ({
+      ...product,
+      image: excelImages[index] || product.image || product['Hình ảnh'] || '',
+    }));
+
+    try {
+      const result = await importProductsFromExcel({
+        products: productsWithImages,
+      }).unwrap();
+      toast.success(result.message);
+      setShowExcelModal(false);
+      setExcelProducts([]);
+      setExcelFileName('');
+      setExcelImages({});
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
+  };
+
+  const downloadExcelTemplate = () => {
+    const template = [
+      {
+        name: 'Tên sản phẩm mẫu',
+        price: 100000,
+        brand: 'Thương hiệu',
+        category: 'Danh mục',
+        countInStock: 10,
+        description: 'Mô tả sản phẩm',
+        image: 'https://example.com/image.jpg',
+      },
+    ];
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Products');
+    XLSX.writeFile(wb, 'product_template.xlsx');
+  };
+
+  // Helper function to get image URL from excel product
+  const getExcelProductImage = (product) => {
+    return product.image || product['Hình ảnh'] || product['Image'] || '';
   };
 
   return (
@@ -356,11 +563,370 @@ const ProductListScreen = () => {
         </Modal.Body>
       </Modal>
 
+      {/* Bulk Create Modal */}
+      <Modal
+        show={showBulkModal}
+        onHide={handleBulkModalClose}
+        centered
+        size='xl'
+        className='bulk-product-modal'
+      >
+        <Modal.Header closeButton className='create-modal-header'>
+          <Modal.Title className='create-modal-title'>
+            {vi.createBulkProducts}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className='create-modal-body'>
+          <Form onSubmit={handleBulkSubmit}>
+            <div className='bulk-products-container'>
+              {bulkProducts.map((product, index) => (
+                <div key={index} className='bulk-product-item'>
+                  <div className='bulk-product-header'>
+                    <span className='bulk-product-index'>
+                      {vi.productIndex} #{index + 1}
+                    </span>
+                    {bulkProducts.length > 1 && (
+                      <Button
+                        variant='danger'
+                        size='sm'
+                        onClick={() => handleRemoveBulkProduct(index)}
+                        className='bulk-remove-btn'
+                      >
+                        <FaTimes />
+                      </Button>
+                    )}
+                  </div>
+                  <div className='bulk-product-fields'>
+                    <Form.Group className='bulk-field'>
+                      <Form.Label>Tên *</Form.Label>
+                      <Form.Control
+                        type='text'
+                        value={product.name}
+                        onChange={(e) =>
+                          handleBulkProductChange(index, 'name', e.target.value)
+                        }
+                        placeholder='Tên sản phẩm'
+                        required
+                      />
+                    </Form.Group>
+                    <Form.Group className='bulk-field'>
+                      <Form.Label>Giá *</Form.Label>
+                      <Form.Control
+                        type='number'
+                        value={product.price}
+                        onChange={(e) =>
+                          handleBulkProductChange(
+                            index,
+                            'price',
+                            e.target.value
+                          )
+                        }
+                        placeholder='0'
+                        required
+                      />
+                    </Form.Group>
+                    <Form.Group className='bulk-field'>
+                      <Form.Label>Thương hiệu *</Form.Label>
+                      <Form.Control
+                        type='text'
+                        value={product.brand}
+                        onChange={(e) =>
+                          handleBulkProductChange(
+                            index,
+                            'brand',
+                            e.target.value
+                          )
+                        }
+                        placeholder='Thương hiệu'
+                        required
+                      />
+                    </Form.Group>
+                    <Form.Group className='bulk-field'>
+                      <Form.Label>Danh mục *</Form.Label>
+                      <Form.Control
+                        type='text'
+                        value={product.category}
+                        onChange={(e) =>
+                          handleBulkProductChange(
+                            index,
+                            'category',
+                            e.target.value
+                          )
+                        }
+                        placeholder='Danh mục'
+                        required
+                      />
+                    </Form.Group>
+                    <Form.Group className='bulk-field'>
+                      <Form.Label>Số lượng</Form.Label>
+                      <Form.Control
+                        type='number'
+                        value={product.countInStock}
+                        onChange={(e) =>
+                          handleBulkProductChange(
+                            index,
+                            'countInStock',
+                            e.target.value
+                          )
+                        }
+                        placeholder='0'
+                      />
+                    </Form.Group>
+                    <Form.Group className='bulk-field bulk-field-wide'>
+                      <Form.Label>Mô tả *</Form.Label>
+                      <Form.Control
+                        type='text'
+                        value={product.description}
+                        onChange={(e) =>
+                          handleBulkProductChange(
+                            index,
+                            'description',
+                            e.target.value
+                          )
+                        }
+                        placeholder='Mô tả sản phẩm'
+                        required
+                      />
+                    </Form.Group>
+                    <Form.Group className='bulk-field bulk-field-image'>
+                      <Form.Label>Hình ảnh</Form.Label>
+                      <div className='bulk-image-upload'>
+                        <input
+                          type='file'
+                          id={`bulkImage-${index}`}
+                          accept='image/*'
+                          onChange={(e) => handleBulkImageChange(index, e)}
+                          className='file-input-hidden'
+                        />
+                        <label
+                          htmlFor={`bulkImage-${index}`}
+                          className='bulk-image-label'
+                        >
+                          {product.imagePreview ? (
+                            <img
+                              src={product.imagePreview}
+                              alt='Preview'
+                              className='bulk-image-preview'
+                            />
+                          ) : (
+                            <div className='bulk-image-placeholder'>
+                              <FaUpload />
+                              <span>Chọn ảnh</span>
+                            </div>
+                          )}
+                        </label>
+                      </div>
+                    </Form.Group>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className='bulk-actions'>
+              <Button
+                type='button'
+                variant='outline-primary'
+                onClick={handleAddBulkProduct}
+                className='add-product-btn'
+              >
+                <FaPlus /> {vi.addProduct}
+              </Button>
+            </div>
+            <div className='form-actions-modern'>
+              <Button
+                variant='light'
+                className='btn-cancel-modern'
+                onClick={handleBulkModalClose}
+              >
+                Hủy
+              </Button>
+              <Button
+                variant='primary'
+                type='submit'
+                disabled={loadingBulk}
+                className='btn-submit-modern'
+              >
+                {loadingBulk
+                  ? 'Đang tạo...'
+                  : `Tạo ${bulkProducts.length} Sản Phẩm`}
+              </Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Excel Import Modal */}
+      <Modal
+        show={showExcelModal}
+        onHide={handleExcelModalClose}
+        centered
+        size='lg'
+        className='excel-import-modal'
+      >
+        <Modal.Header closeButton className='create-modal-header'>
+          <Modal.Title className='create-modal-title'>
+            <FaFileExcel className='me-2' /> {vi.importExcel}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className='create-modal-body'>
+          <div className='excel-import-container'>
+            <div className='excel-template-section'>
+              <h5>Bước 1: Tải file mẫu Excel</h5>
+              <p className='text-muted'>
+                Tải file mẫu và điền thông tin sản phẩm theo định dạng
+              </p>
+              <Button
+                variant='outline-success'
+                onClick={downloadExcelTemplate}
+                className='download-template-btn'
+              >
+                <FaDownload /> {vi.downloadTemplate}
+              </Button>
+            </div>
+
+            <div className='excel-upload-section'>
+              <h5>Bước 2: Upload file Excel</h5>
+              <div className='excel-upload-box'>
+                <input
+                  type='file'
+                  id='excelFile'
+                  accept='.xlsx,.xls'
+                  onChange={handleExcelFileChange}
+                  className='file-input-hidden'
+                />
+                <label htmlFor='excelFile' className='excel-upload-label'>
+                  <FaFileExcel className='excel-icon' />
+                  <span>
+                    {excelFileName || 'Chọn file Excel (.xlsx, .xls)'}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {excelProducts.length > 0 && (
+              <div className='excel-preview-section'>
+                <h5>
+                  Bước 3: Thêm hình ảnh cho sản phẩm{' '}
+                  <Badge bg='primary'>{excelProducts.length} sản phẩm</Badge>
+                </h5>
+                <p className='text-muted'>
+                  Click vào ô hình ảnh để upload ảnh cho từng sản phẩm
+                </p>
+                <div className='excel-preview-table'>
+                  <Table striped bordered hover size='sm'>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Tên</th>
+                        <th>Giá</th>
+                        <th>Thương hiệu</th>
+                        <th>Danh mục</th>
+                        <th>Hình ảnh</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {excelProducts.map((p, i) => (
+                        <tr key={i}>
+                          <td>{i + 1}</td>
+                          <td>{p.name || p['Tên sản phẩm'] || '-'}</td>
+                          <td>{p.price || p['Giá'] || '-'}</td>
+                          <td>{p.brand || p['Thương hiệu'] || '-'}</td>
+                          <td>{p.category || p['Danh mục'] || '-'}</td>
+                          <td className='excel-image-cell'>
+                            <input
+                              type='file'
+                              id={`excelImage-${i}`}
+                              accept='image/*'
+                              onChange={(e) =>
+                                handleExcelProductImageChange(i, e)
+                              }
+                              className='file-input-hidden'
+                            />
+                            <label
+                              htmlFor={`excelImage-${i}`}
+                              className='excel-image-label'
+                            >
+                              {excelImages[i] ? (
+                                <img
+                                  src={excelImages[i]}
+                                  alt='Preview'
+                                  className='excel-image-preview'
+                                />
+                              ) : getExcelProductImage(p) ? (
+                                <img
+                                  src={getExcelProductImage(p)}
+                                  alt='Preview'
+                                  className='excel-image-preview'
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'flex';
+                                  }}
+                                />
+                              ) : null}
+                              {!excelImages[i] && !getExcelProductImage(p) && (
+                                <div className='excel-image-placeholder'>
+                                  <FaUpload size={12} />
+                                </div>
+                              )}
+                              {!excelImages[i] && getExcelProductImage(p) && (
+                                <div
+                                  className='excel-image-placeholder'
+                                  style={{ display: 'none' }}
+                                >
+                                  <FaUpload size={12} />
+                                </div>
+                              )}
+                            </label>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className='form-actions-modern'>
+            <Button
+              variant='light'
+              className='btn-cancel-modern'
+              onClick={handleExcelModalClose}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant='success'
+              onClick={handleExcelImport}
+              disabled={loadingExcel || excelProducts.length === 0}
+              className='btn-submit-modern btn-excel-import'
+            >
+              {loadingExcel
+                ? 'Đang import...'
+                : `Import ${excelProducts.length} Sản Phẩm`}
+            </Button>
+          </div>
+        </Modal.Body>
+      </Modal>
+
       <Row className='align-items-center admin-header'>
         <Col>
           <h1 className='admin-title'>{vi.products}</h1>
         </Col>
-        <Col className='text-end'>
+        <Col className='text-end admin-actions'>
+          <Button
+            className='excel-btn me-2'
+            onClick={handleExcelModalOpen}
+            title={vi.importExcel}
+          >
+            <FaFileExcel /> {vi.importExcel}
+          </Button>
+          <Button
+            className='bulk-btn me-2'
+            onClick={handleBulkModalOpen}
+            title={vi.createBulkProducts}
+          >
+            <FaPlus /> {vi.createBulkProducts}
+          </Button>
           <Button className='create-btn' onClick={createProductHandler}>
             <FaPlus /> {vi.createProduct}
           </Button>

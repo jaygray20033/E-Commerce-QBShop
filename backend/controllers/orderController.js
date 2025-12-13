@@ -291,6 +291,119 @@ const getOrders = asyncHandler(async (req, res) => {
   res.json(orders);
 });
 
+// @desc    Get admin dashboard statistics
+// @route   GET /api/orders/stats
+// @access  Private/Admin
+const getAdminStats = asyncHandler(async (req, res) => {
+  // Get total revenue from paid orders
+  const totalRevenueResult = await Order.aggregate([
+    { $match: { isPaid: true } },
+    { $group: { _id: null, total: { $sum: '$totalPrice' } } },
+  ]);
+  const totalRevenue = totalRevenueResult[0]?.total || 0;
+
+  // Get total orders
+  const totalOrders = await Order.countDocuments();
+
+  // Get paid orders count
+  const paidOrders = await Order.countDocuments({ isPaid: true });
+
+  // Get delivered orders count
+  const deliveredOrders = await Order.countDocuments({ isDelivered: true });
+
+  // Get pending orders (not paid or not delivered)
+  const pendingOrders = await Order.countDocuments({
+    $or: [{ isPaid: false }, { isDelivered: false }],
+  });
+
+  // Get recent orders (last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const recentOrders = await Order.countDocuments({
+    createdAt: { $gte: sevenDaysAgo },
+  });
+
+  // Get monthly sales data for chart (last 12 months)
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+  const monthlySales = await Order.aggregate([
+    {
+      $match: {
+        isPaid: true,
+        createdAt: { $gte: twelveMonthsAgo },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' },
+        },
+        revenue: { $sum: '$totalPrice' },
+        orders: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } },
+  ]);
+
+  // Get daily sales for last 30 days
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const dailySales = await Order.aggregate([
+    {
+      $match: {
+        isPaid: true,
+        createdAt: { $gte: thirtyDaysAgo },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' },
+          day: { $dayOfMonth: '$createdAt' },
+        },
+        revenue: { $sum: '$totalPrice' },
+        orders: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } },
+  ]);
+
+  // Get top selling products
+  const topProducts = await Order.aggregate([
+    { $match: { isPaid: true } },
+    { $unwind: '$orderItems' },
+    {
+      $group: {
+        _id: '$orderItems.product',
+        name: { $first: '$orderItems.name' },
+        image: { $first: '$orderItems.image' },
+        totalSold: { $sum: '$orderItems.qty' },
+        totalRevenue: {
+          $sum: { $multiply: ['$orderItems.price', '$orderItems.qty'] },
+        },
+      },
+    },
+    { $sort: { totalSold: -1 } },
+    { $limit: 5 },
+  ]);
+
+  res.json({
+    totalRevenue,
+    totalOrders,
+    paidOrders,
+    deliveredOrders,
+    pendingOrders,
+    recentOrders,
+    monthlySales,
+    dailySales,
+    topProducts,
+  });
+});
+
 export {
   addOrderItems,
   getMyOrders,
@@ -300,4 +413,5 @@ export {
   vnpayReturn,
   updateOrderToDelivered,
   getOrders,
+  getAdminStats,
 };

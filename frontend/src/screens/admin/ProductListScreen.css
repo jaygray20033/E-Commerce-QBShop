@@ -449,3 +449,271 @@
     height: 150px;
   }
 }
+
+/* Admin Actions Buttons */
+.admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.bulk-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+}
+
+.bulk-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+}
+
+.excel-btn {
+  background: linear-gradient(135deg, #217346 0%, #1d6b3f 100%) !important;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(33, 115, 70, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+}
+
+.excel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(33, 115, 70, 0.4) !important;
+  background: linear-gradient(135deg, #1d6b3f 0%, #185a34 100%) !important;
+}
+
+/* Bulk Product Modal */
+.bulk-product-modal .modal-dialog {
+  max-width: 900px;
+}
+
+.bulk-products-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.bulk-product-item {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.bulk-product-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.bulk-product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.bulk-product-index {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 0.95rem;
+}
+
+.bulk-remove-btn {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.bulk-product-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.bulk-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.25rem;
+}
+
+.bulk-field input {
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.bulk-field input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.bulk-field-wide {
+  grid-column: span 3;
+}
+
+.bulk-actions {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.add-product-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px dashed #667eea;
+  color: #667eea;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.add-product-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
+  border-style: solid;
+}
+
+/* Excel Import Modal */
+.excel-import-modal .modal-dialog {
+  max-width: 700px;
+}
+
+.excel-import-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.excel-template-section,
+.excel-upload-section,
+.excel-preview-section {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.excel-template-section h5,
+.excel-upload-section h5,
+.excel-preview-section h5 {
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.75rem;
+}
+
+.download-template-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid #217346;
+  color: #217346;
+  transition: all 0.3s ease;
+}
+
+.download-template-btn:hover {
+  background: #217346;
+  color: white;
+}
+
+.excel-upload-box {
+  margin-top: 1rem;
+}
+
+.excel-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  border: 2px dashed #217346;
+  border-radius: 12px;
+  background: rgba(33, 115, 70, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.excel-upload-label:hover {
+  border-color: #185a34;
+  background: rgba(33, 115, 70, 0.1);
+}
+
+.excel-icon {
+  font-size: 3rem;
+  color: #217346;
+}
+
+.excel-preview-section {
+  background: white;
+}
+
+.excel-preview-table {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 1rem;
+}
+
+.excel-preview-table table {
+  font-size: 0.85rem;
+}
+
+.btn-excel-import {
+  background: linear-gradient(135deg, #217346 0%, #1d6b3f 100%) !important;
+}
+
+.btn-excel-import:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(33, 115, 70, 0.3) !important;
+}
+
+/* Responsive for bulk and excel modals */
+@media (max-width: 768px) {
+  .admin-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-actions .btn {
+    margin-bottom: 0.5rem;
+    justify-content: center;
+  }
+
+  .bulk-product-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .bulk-field-wide {
+    grid-column: span 1;
+  }
+
+  .excel-upload-label {
+    padding: 1.5rem;
+  }
+
+  .excel-icon {
+    font-size: 2rem;
+  }
+}

@@ -11,6 +11,29 @@ export const productsApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 5,
       providesTags: ['Products'],
     }),
+    getInventory: builder.query({
+      query: () => ({
+        url: `${PRODUCTS_URL}/inventory`,
+      }),
+      keepUnusedDataFor: 5,
+      providesTags: ['Products'],
+    }),
+    updateStock: builder.mutation({
+      query: (data) => ({
+        url: `${PRODUCTS_URL}/${data.productId}/stock`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Products'],
+    }),
+    updateBulkStock: builder.mutation({
+      query: (data) => ({
+        url: `${PRODUCTS_URL}/bulk-stock`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Products'],
+    }),
     getProductDetails: builder.query({
       query: (productId) => ({
         url: `${PRODUCTS_URL}/${productId}`,
@@ -20,6 +43,22 @@ export const productsApiSlice = apiSlice.injectEndpoints({
     createProduct: builder.mutation({
       query: (data) => ({
         url: `${PRODUCTS_URL}`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Products'],
+    }),
+    createBulkProducts: builder.mutation({
+      query: (data) => ({
+        url: `${PRODUCTS_URL}/bulk`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Products'],
+    }),
+    importProductsFromExcel: builder.mutation({
+      query: (data) => ({
+        url: `${PRODUCTS_URL}/import-excel`,
         method: 'POST',
         body: data,
       }),
@@ -65,7 +104,12 @@ export const productsApiSlice = apiSlice.injectEndpoints({
 export const {
   useGetProductsQuery,
   useGetProductDetailsQuery,
+  useGetInventoryQuery,
+  useUpdateStockMutation,
+  useUpdateBulkStockMutation,
   useCreateProductMutation,
+  useCreateBulkProductsMutation,
+  useImportProductsFromExcelMutation,
   useUpdateProductMutation,
   useUploadProductImageMutation,
   useDeleteProductMutation,

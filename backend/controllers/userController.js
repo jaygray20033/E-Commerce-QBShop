@@ -154,6 +154,7 @@ const getUserById = asyncHandler(async (req, res) => {
     throw new Error('User not found');
   }
 });
+
 // @desc    Update user
 // @route   PUT /api/users/:id
 // @access  Private/Admin
@@ -179,6 +180,93 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get user statistics for admin
+// @route   GET /api/users/stats
+// @access  Private/Admin
+const getUserStats = asyncHandler(async (req, res) => {
+  // Get total users
+  const totalUsers = await User.countDocuments();
+
+  // Get admin users count
+  const adminUsers = await User.countDocuments({ isAdmin: true });
+
+  // Get regular users count
+  const regularUsers = await User.countDocuments({ isAdmin: false });
+
+  // Get new users in the last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const newUsersThisWeek = await User.countDocuments({
+    createdAt: { $gte: sevenDaysAgo },
+  });
+
+  // Get new users in the last 30 days
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const newUsersThisMonth = await User.countDocuments({
+    createdAt: { $gte: thirtyDaysAgo },
+  });
+
+  // Get daily user registrations for last 30 days
+  const dailyRegistrations = await User.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: thirtyDaysAgo },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' },
+          day: { $dayOfMonth: '$createdAt' },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } },
+  ]);
+
+  // Get monthly user registrations for last 12 months
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+  const monthlyRegistrations = await User.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: twelveMonthsAgo },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } },
+  ]);
+
+  // Get recent users (last 10 registered)
+  const recentUsers = await User.find({})
+    .select('-password')
+    .sort({ createdAt: -1 })
+    .limit(10);
+
+  res.json({
+    totalUsers,
+    adminUsers,
+    regularUsers,
+    newUsersThisWeek,
+    newUsersThisMonth,
+    dailyRegistrations,
+    monthlyRegistrations,
+    recentUsers,
+  });
+});
+
 export {
   authUser,
   registerUser,
@@ -189,4 +277,5 @@ export {
   deleteUser,
   getUserById,
   updateUser,
+  getUserStats,
 };

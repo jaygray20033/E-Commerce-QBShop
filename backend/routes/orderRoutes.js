@@ -10,11 +10,14 @@ import {
   vnpayReturn,
   updateOrderToDelivered,
   getOrders,
+  getAdminStats,
 } from '../controllers/orderController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
 router.route('/').post(protect, addOrderItems).get(protect, admin, getOrders);
 router.route('/mine').get(protect, getMyOrders);
+
+router.route('/stats').get(protect, admin, getAdminStats);
 
 router.get('/vnpay/return', vnpayReturn);
 

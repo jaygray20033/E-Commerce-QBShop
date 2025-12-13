@@ -53,6 +53,12 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
       }),
     }),
+    getAdminStats: builder.query({
+      query: () => ({
+        url: `${ORDERS_URL}/stats`,
+      }),
+      keepUnusedDataFor: 5,
+    }),
   }),
 });
 
@@ -65,4 +71,5 @@ export const {
   useGetMyOrdersQuery,
   useGetOrdersQuery,
   useDeliverOrderMutation,
+  useGetAdminStatsQuery,
 } = orderApiSlice;

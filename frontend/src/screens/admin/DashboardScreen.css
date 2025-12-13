@@ -1,0 +1,317 @@
+.inventory-container {
+  padding: 2rem 1rem;
+  max-width: 1400px;
+}
+
+.inventory-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.inventory-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.title-icon {
+  color: #667eea;
+}
+
+.inventory-subtitle {
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+/* Stat Cards */
+.stat-card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card .card-body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.stat-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon {
+  font-size: 1.75rem;
+  color: white;
+}
+
+.total-card .stat-icon-wrapper {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.instock-card .stat-icon-wrapper {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.lowstock-card .stat-icon-wrapper {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.outstock-card .stat-icon-wrapper {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.stat-label {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Value Card */
+.value-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.value-card .card-body {
+  padding: 2rem;
+  gap: 1.5rem;
+}
+
+.value-icon {
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.value-content {
+  text-align: center;
+}
+
+.value-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.value-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  margin: 0.5rem 0 0;
+}
+
+/* Filter Card */
+.filter-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filter-select {
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+}
+
+.filter-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Table Card */
+.table-card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.inventory-table {
+  margin: 0;
+}
+
+.inventory-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.inventory-table thead th {
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 1rem;
+  border: none;
+  white-space: nowrap;
+}
+
+.inventory-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: rgba(102, 126, 234, 0.05);
+}
+
+.inventory-table tbody td {
+  padding: 0.875rem 1rem;
+  vertical-align: middle;
+}
+
+.product-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.product-name {
+  font-weight: 600;
+  color: #1f2937;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.price-cell {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.value-cell {
+  font-weight: 600;
+  color: #10b981;
+}
+
+.stock-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.stock-input {
+  width: 80px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1.5px solid #667eea;
+}
+
+.stock-input:focus {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+/* Stock Badge */
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover {
+  transform: scale(1.05);
+}
+
+.save-btn {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+}
+
+.cancel-btn {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+}
+
+/* No Products */
+.no-products {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+}
+
+.no-products p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inventory-container {
+    padding: 1rem;
+  }
+
+  .inventory-title {
+    font-size: 1.5rem;
+  }
+
+  .stat-card .card-body {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .value-amount {
+    font-size: 1.75rem;
+  }
+
+  .value-card .card-body {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+
+  .product-name {
+    max-width: 120px;
+  }
+}

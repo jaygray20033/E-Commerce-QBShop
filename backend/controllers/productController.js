@@ -164,6 +164,233 @@ const getTopProducts = asyncHandler(async (req, res) => {
   res.json(products);
 });
 
+// @desc    Create multiple products
+// @route   POST /api/products/bulk
+// @access  Private/Admin
+const createBulkProducts = asyncHandler(async (req, res) => {
+  const { products } = req.body;
+
+  if (!products || !Array.isArray(products) || products.length === 0) {
+    res.status(400);
+    throw new Error('Vui lòng cung cấp danh sách sản phẩm');
+  }
+
+  const results = {
+    success: [],
+    failed: [],
+  };
+
+  for (const productData of products) {
+    try {
+      const { name, price, brand, category, countInStock, description, image } =
+        productData;
+
+      if (!name || !price || !brand || !category || !description) {
+        results.failed.push({
+          name: name || 'Không có tên',
+          error: 'Thiếu thông tin bắt buộc',
+        });
+        continue;
+      }
+
+      const product = new Product({
+        name,
+        price: Number(price),
+        user: req.user._id,
+        image: image || '/images/sample.jpg',
+        brand,
+        category,
+        countInStock: Number(countInStock) || 0,
+        numReviews: 0,
+        description,
+      });
+
+      const createdProduct = await product.save();
+      results.success.push({
+        _id: createdProduct._id,
+        name: createdProduct.name,
+      });
+    } catch (error) {
+      results.failed.push({
+        name: productData.name || 'Không có tên',
+        error: error.message,
+      });
+    }
+  }
+
+  res.status(201).json({
+    message: `Đã tạo ${results.success.length} sản phẩm thành công, ${results.failed.length} thất bại`,
+    results,
+  });
+});
+
+// @desc    Import products from Excel data
+// @route   POST /api/products/import-excel
+// @access  Private/Admin
+const importProductsFromExcel = asyncHandler(async (req, res) => {
+  const { products } = req.body;
+
+  if (!products || !Array.isArray(products) || products.length === 0) {
+    res.status(400);
+    throw new Error('Không có dữ liệu sản phẩm từ file Excel');
+  }
+
+  const results = {
+    success: [],
+    failed: [],
+  };
+
+  for (const row of products) {
+    try {
+      // Map Excel columns to product fields
+      const productData = {
+        name: row.name || row['Tên sản phẩm'] || row['Name'],
+        price: Number(row.price || row['Giá'] || row['Price']) || 0,
+        brand: row.brand || row['Thương hiệu'] || row['Brand'] || '',
+        category: row.category || row['Danh mục'] || row['Category'] || '',
+        countInStock:
+          Number(row.countInStock || row['Số lượng'] || row['Stock']) || 0,
+        description:
+          row.description || row['Mô tả'] || row['Description'] || '',
+        image:
+          row.image || row['Hình ảnh'] || row['Image'] || '/images/sample.jpg',
+      };
+
+      if (
+        !productData.name ||
+        !productData.price ||
+        !productData.brand ||
+        !productData.category
+      ) {
+        results.failed.push({
+          row: row,
+          error: 'Thiếu thông tin bắt buộc (tên, giá, thương hiệu, danh mục)',
+        });
+        continue;
+      }
+
+      const product = new Product({
+        ...productData,
+        user: req.user._id,
+        numReviews: 0,
+        rating: 0,
+      });
+
+      const createdProduct = await product.save();
+      results.success.push({
+        _id: createdProduct._id,
+        name: createdProduct.name,
+      });
+    } catch (error) {
+      results.failed.push({
+        row: row,
+        error: error.message,
+      });
+    }
+  }
+
+  res.status(201).json({
+    message: `Import thành công ${results.success.length} sản phẩm, ${results.failed.length} thất bại`,
+    results,
+  });
+});
+
+// @desc    Get inventory data
+// @route   GET /api/products/inventory
+// @access  Private/Admin
+const getInventory = asyncHandler(async (req, res) => {
+  const products = await Product.find({}).select(
+    'name image brand category countInStock price'
+  );
+
+  const totalProducts = products.length;
+  const outOfStock = products.filter((p) => p.countInStock === 0).length;
+  const lowStock = products.filter(
+    (p) => p.countInStock > 0 && p.countInStock <= 10
+  ).length;
+  const inStock = products.filter((p) => p.countInStock > 10).length;
+  const totalValue = products.reduce(
+    (acc, p) => acc + p.price * p.countInStock,
+    0
+  );
+
+  res.json({
+    products,
+    stats: {
+      totalProducts,
+      outOfStock,
+      lowStock,
+      inStock,
+      totalValue,
+    },
+  });
+});
+
+// @desc    Update product stock
+// @route   PUT /api/products/:id/stock
+// @access  Private/Admin
+const updateStock = asyncHandler(async (req, res) => {
+  const { countInStock } = req.body;
+
+  const product = await Product.findById(req.params.id);
+
+  if (product) {
+    product.countInStock = Number(countInStock);
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } else {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+});
+
+// @desc    Update multiple products stock
+// @route   PUT /api/products/bulk-stock
+// @access  Private/Admin
+const updateBulkStock = asyncHandler(async (req, res) => {
+  const { updates } = req.body;
+
+  if (!updates || !Array.isArray(updates) || updates.length === 0) {
+    res.status(400);
+    throw new Error('Vui lòng cung cấp danh sách cập nhật');
+  }
+
+  const results = {
+    success: [],
+    failed: [],
+  };
+
+  for (const update of updates) {
+    try {
+      const product = await Product.findById(update.productId);
+      if (product) {
+        product.countInStock = Number(update.countInStock);
+        await product.save();
+        results.success.push({
+          _id: product._id,
+          name: product.name,
+          countInStock: product.countInStock,
+        });
+      } else {
+        results.failed.push({
+          productId: update.productId,
+          error: 'Không tìm thấy sản phẩm',
+        });
+      }
+    } catch (error) {
+      results.failed.push({
+        productId: update.productId,
+        error: error.message,
+      });
+    }
+  }
+
+  res.json({
+    message: `Đã cập nhật ${results.success.length} sản phẩm, ${results.failed.length} thất bại`,
+    results,
+  });
+});
+
 export {
   getProducts,
   getProductById,
@@ -172,4 +399,9 @@ export {
   deleteProduct,
   createProductReview,
   getTopProducts,
+  createBulkProducts,
+  importProductsFromExcel,
+  getInventory,
+  updateStock,
+  updateBulkStock,
 };
