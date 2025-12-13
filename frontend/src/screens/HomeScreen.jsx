@@ -10,10 +10,11 @@ import Message from '../components/Message';
 import Paginate from '../components/Paginate';
 import ProductCarousel from '../components/ProductCarousel';
 import Meta from '../components/Meta';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import './HomeScreen.css';
 
 const HomeScreen = () => {
+  const { t } = useLanguage();
   const { pageNumber, keyword } = useParams();
 
   const { data, isLoading, error } = useGetProductsQuery({
@@ -36,7 +37,7 @@ const HomeScreen = () => {
           >
             <polyline points='15 18 9 12 15 6'></polyline>
           </svg>
-          {vi.goBack}
+          {t.goBack}
         </Link>
       )}
 
@@ -52,7 +53,7 @@ const HomeScreen = () => {
 
           <div className='home-header'>
             <div className='header-content'>
-              <h1 className='page-title'>{vi.latestProducts}</h1>
+              <h1 className='page-title'>{t.latestProducts}</h1>
             </div>
           </div>
 

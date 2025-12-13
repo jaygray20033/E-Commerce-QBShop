@@ -24,11 +24,12 @@ import Loader from '../components/Loader';
 import Message from '../components/Message';
 import Meta from '../components/Meta';
 import { addToCart } from '../slices/cartSlice';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import { formatPrice } from '../utils/formatPrice';
 import './ProductScreen.css';
 
 const ProductScreen = () => {
+  const { t } = useLanguage();
   const { id: productId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ const ProductScreen = () => {
         comment,
       }).unwrap();
       refetch();
-      toast.success('Nhận xét đã được tạo thành công');
+      toast.success(t.reviewCreated);
       setRating(0);
       setComment('');
     } catch (err) {
@@ -90,7 +91,7 @@ const ProductScreen = () => {
           >
             <polyline points='15 18 9 12 15 6'></polyline>
           </svg>
-          {vi.goBack}
+          {t.goBack}
         </Link>
         {isLoading ? (
           <Loader />
@@ -109,7 +110,7 @@ const ProductScreen = () => {
               </h1>
               <Rating
                 value={product.rating}
-                text={`${product.numReviews} ${vi.reviews}`}
+                text={`${product.numReviews} ${t.reviews}`}
               />
             </div>
 
@@ -135,7 +136,7 @@ const ProductScreen = () => {
                   <ListGroup variant='flush'>
                     <ListGroup.Item className='p-4 border-bottom'>
                       <h5 className='text-muted text-uppercase small fw-semibold'>
-                        {vi.description}
+                        {t.description}
                       </h5>
                       <p className='mt-2 mb-0 text-dark'>
                         {product.description}
@@ -146,7 +147,7 @@ const ProductScreen = () => {
                       <div className='d-flex justify-content-between align-items-end'>
                         <div>
                           <div className='text-muted text-uppercase small fw-semibold'>
-                            {vi.price}
+                            {t.price}
                           </div>
                           <div className='product-price display-6 fw-bold mt-1'>
                             {formatPrice(product.price)}
@@ -159,9 +160,7 @@ const ProductScreen = () => {
                               : 'out-of-stock'
                           }`}
                         >
-                          {product.countInStock > 0
-                            ? vi.inStock
-                            : vi.outOfStock}
+                          {product.countInStock > 0 ? t.inStock : t.outOfStock}
                         </span>
                       </div>
                     </ListGroup.Item>
@@ -170,7 +169,7 @@ const ProductScreen = () => {
                       <ListGroup.Item className='p-4 border-bottom'>
                         <div className='quantity-section'>
                           <label className='text-muted text-uppercase small fw-semibold d-block mb-2'>
-                            {vi.quantity}
+                            {t.quantity}
                           </label>
                           <Form.Select
                             value={qty}
@@ -195,7 +194,7 @@ const ProductScreen = () => {
                         disabled={product.countInStock === 0}
                         className='add-to-cart-btn w-100 py-3 fw-bold'
                       >
-                        {vi.addToCart}
+                        {t.addToCart}
                       </Button>
                     </ListGroup.Item>
                   </ListGroup>
@@ -205,7 +204,7 @@ const ProductScreen = () => {
               <Col lg={6} className='d-flex'>
                 <Card className='review-form-card border-0 shadow-sm w-100'>
                   <Card.Body className='p-4 p-xl-5'>
-                    <h3 className='form-title mb-4'>{vi.writeReview}</h3>
+                    <h3 className='form-title mb-4'>{t.writeReview}</h3>
 
                     {loadingProductReview && <Loader />}
 
@@ -213,7 +212,7 @@ const ProductScreen = () => {
                       <Form onSubmit={submitHandler}>
                         <Form.Group className='mb-4' controlId='rating'>
                           <Form.Label className='form-label'>
-                            {vi.rating}
+                            {t.rating}
                           </Form.Label>
                           <Form.Select
                             required
@@ -221,18 +220,18 @@ const ProductScreen = () => {
                             onChange={(e) => setRating(Number(e.target.value))}
                             className='form-control-custom'
                           >
-                            <option value=''>{vi.selectRating}</option>
-                            <option value='1'>1 - Tệ</option>
-                            <option value='2'>2 - Trung bình</option>
-                            <option value='3'>3 - Tốt</option>
-                            <option value='4'>4 - Rất tốt</option>
-                            <option value='5'>5 - Xuất sắc</option>
+                            <option value=''>{t.selectRating}</option>
+                            <option value='1'>{t.rating1}</option>
+                            <option value='2'>{t.rating2}</option>
+                            <option value='3'>{t.rating3}</option>
+                            <option value='4'>{t.rating4}</option>
+                            <option value='5'>{t.rating5}</option>
                           </Form.Select>
                         </Form.Group>
 
                         <Form.Group className='mb-4' controlId='comment'>
                           <Form.Label className='form-label'>
-                            {vi.comment}
+                            {t.comment}
                           </Form.Label>
                           <Form.Control
                             as='textarea'
@@ -241,7 +240,7 @@ const ProductScreen = () => {
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             className='form-control-custom'
-                            placeholder='Chia sẻ trải nghiệm của bạn...'
+                            placeholder={t.shareExperience}
                           />
                         </Form.Group>
 
@@ -250,14 +249,14 @@ const ProductScreen = () => {
                           disabled={loadingProductReview}
                           className='submit-review-btn w-100 py-3 fw-bold'
                         >
-                          {vi.submit}
+                          {t.submit}
                         </Button>
                       </Form>
                     ) : (
                       <Message variant='info'>
-                        {vi.signInToReview}{' '}
+                        {t.signInToReview}{' '}
                         <Link to='/login' className='text-decoration-underline'>
-                          {vi.signin}
+                          {t.signin}
                         </Link>
                       </Message>
                     )}
@@ -268,9 +267,9 @@ const ProductScreen = () => {
 
             {/* Phần đánh giá cũ (giữ nguyên hoặc thu gọn tùy ý) */}
             <div className='mt-5 pt-5 border-top'>
-              <h2 className='section-title mb-4'>{vi.reviews}</h2>
+              <h2 className='section-title mb-4'>{t.reviews}</h2>
               {product.reviews.length === 0 ? (
-                <Message>{vi.noReviews}</Message>
+                <Message>{t.noReviews}</Message>
               ) : (
                 <ListGroup variant='flush'>
                   {product.reviews.map((review) => (

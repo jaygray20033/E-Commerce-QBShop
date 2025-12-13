@@ -10,10 +10,11 @@ import {
   useGetUserDetailsQuery,
   useUpdateUserMutation,
 } from '../../slices/usersApiSlice';
-import { vi } from '../../i18n/translations';
+import { useLanguage } from '../../context/LanguageContext';
 import './UserEditScreen.css';
 
 const UserEditScreen = () => {
+  const { t } = useLanguage();
   const { id: userId } = useParams();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,7 +35,7 @@ const UserEditScreen = () => {
     e.preventDefault();
     try {
       await updateUser({ userId, name, email, isAdmin });
-      toast.success(vi.userUpdated);
+      toast.success(t.userUpdated);
       refetch();
       navigate('/admin/userlist');
     } catch (err) {
@@ -62,13 +63,13 @@ const UserEditScreen = () => {
         >
           <polyline points='15 18 9 12 15 6'></polyline>
         </svg>
-        {vi.goBack}
+        {t.goBack}
       </Link>
 
       <div className='user-edit-container'>
         <div className='user-edit-header'>
-          <h1 className='edit-title'>{vi.editUser}</h1>
-          <p className='edit-subtitle'>{vi.updateUserInformation}</p>
+          <h1 className='edit-title'>{t.editUser}</h1>
+          <p className='edit-subtitle'>{t.updateUserInformation}</p>
         </div>
 
         {loadingUpdate && <Loader />}
@@ -82,12 +83,12 @@ const UserEditScreen = () => {
           <form onSubmit={submitHandler} className='edit-form'>
             <div className='form-group'>
               <label htmlFor='name' className='form-label'>
-                {vi.name}
+                {t.name}
               </label>
               <input
                 id='name'
                 type='text'
-                placeholder={vi.enterName}
+                placeholder={t.enterName}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className='form-input'
@@ -96,12 +97,12 @@ const UserEditScreen = () => {
 
             <div className='form-group'>
               <label htmlFor='email' className='form-label'>
-                {vi.email}
+                {t.email}
               </label>
               <input
                 id='email'
                 type='email'
-                placeholder={vi.enterEmail}
+                placeholder={t.enterEmail}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className='form-input'
@@ -117,12 +118,12 @@ const UserEditScreen = () => {
                   onChange={(e) => setIsAdmin(e.target.checked)}
                   className='checkbox-input'
                 />
-                <span>{vi.isAdmin}</span>
+                <span>{t.isAdmin}</span>
               </label>
             </div>
 
             <button type='submit' className='submit-button'>
-              {vi.update}
+              {t.update}
             </button>
           </form>
         )}

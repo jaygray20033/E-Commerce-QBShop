@@ -33,6 +33,7 @@ import DashboardScreen from './screens/admin/DashboardScreen';
 import store from './store';
 import { Provider } from 'react-redux';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+import { LanguageProvider } from './context/LanguageContext';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -78,9 +79,11 @@ root.render(
   <React.StrictMode>
     <HelmetProvider>
       <Provider store={store}>
-        <PayPalScriptProvider deferLoading={true}>
-          <RouterProvider router={router} />
-        </PayPalScriptProvider>
+        <LanguageProvider>
+          <PayPalScriptProvider deferLoading={true}>
+            <RouterProvider router={router} />
+          </PayPalScriptProvider>
+        </LanguageProvider>
       </Provider>
     </HelmetProvider>
   </React.StrictMode>

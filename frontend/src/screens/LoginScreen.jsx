@@ -9,10 +9,11 @@ import Loader from '../components/Loader';
 import { useLoginMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import './LoginRegisterScreen.css';
 
 const LoginScreen = () => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -51,18 +52,18 @@ const LoginScreen = () => {
           <Col xs={12} sm={10} md={8} lg={6} className='auth-col'>
             <div className='auth-card'>
               <div className='auth-header'>
-                <h1 className='auth-title'>{vi.signIn}</h1>
+                <h1 className='auth-title'>{t.signIn}</h1>
                 <p className='auth-subtitle'>ログインしてください</p>
               </div>
 
               <Form onSubmit={submitHandler} className='auth-form'>
                 <Form.Group className='form-group' controlId='email'>
                   <Form.Label className='form-label'>
-                    {vi.emailAddress}
+                    {t.emailAddress}
                   </Form.Label>
                   <Form.Control
                     type='email'
-                    placeholder={vi.enterEmail}
+                    placeholder={t.enterEmail}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className='form-input'
@@ -71,10 +72,10 @@ const LoginScreen = () => {
                 </Form.Group>
 
                 <Form.Group className='form-group' controlId='password'>
-                  <Form.Label className='form-label'>{vi.password}</Form.Label>
+                  <Form.Label className='form-label'>{t.password}</Form.Label>
                   <Form.Control
                     type='password'
-                    placeholder={vi.enterPassword}
+                    placeholder={t.enterPassword}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className='form-input'
@@ -87,20 +88,20 @@ const LoginScreen = () => {
                   type='submit'
                   className='auth-submit-btn'
                 >
-                  {isLoading ? <Loader /> : vi.signIn}
+                  {isLoading ? <Loader /> : t.signIn}
                 </Button>
               </Form>
 
               <div className='auth-footer'>
                 <p className='auth-footer-text'>
-                  {vi.newCustomer}{' '}
+                  {t.newCustomer}{' '}
                   <Link
                     to={
                       redirect ? `/register?redirect=${redirect}` : '/register'
                     }
                     className='auth-link'
                   >
-                    {vi.register}
+                    {t.register}
                   </Link>
                 </p>
               </div>

@@ -18,11 +18,12 @@ import { useProfileMutation } from '../slices/usersApiSlice';
 import { useGetMyOrdersQuery } from '../slices/ordersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { Link } from 'react-router-dom';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import { formatPrice } from '../utils/formatPrice';
 import './ProfileScreen.css';
 
 const ProfileScreen = () => {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,10 +65,8 @@ const ProfileScreen = () => {
     <div className='profile-container'>
       <div className='profile-header'>
         <div className='profile-header-content'>
-          <h1 className='profile-title'>{vi.userProfile}</h1>
-          <p className='profile-subtitle'>
-            Quản lý thông tin tài khoản và xem lịch sử đơn hàng
-          </p>
+          <h1 className='profile-title'>{t.userProfile}</h1>
+          <p className='profile-subtitle'>{t.manageAccountInfo}</p>
         </div>
         <div className='profile-user-badge'>
           <FaUser className='badge-icon' />
@@ -79,18 +78,18 @@ const ProfileScreen = () => {
         <div className='profile-section'>
           <div className='profile-form-card'>
             <div className='form-header'>
-              <h2>{vi.userProfile}</h2>
+              <h2>{t.userProfile}</h2>
               <div className='form-header-line'></div>
             </div>
 
             <Form onSubmit={submitHandler} className='profile-form'>
               <Form.Group className='form-group-custom' controlId='name'>
                 <Form.Label className='form-label-custom'>
-                  <FaUser className='label-icon' /> {vi.name}
+                  <FaUser className='label-icon' /> {t.name}
                 </Form.Label>
                 <Form.Control
                   type='text'
-                  placeholder={vi.enterName}
+                  placeholder={t.enterName}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className='form-control-custom'
@@ -99,11 +98,11 @@ const ProfileScreen = () => {
 
               <Form.Group className='form-group-custom' controlId='email'>
                 <Form.Label className='form-label-custom'>
-                  <FaEnvelope className='label-icon' /> {vi.emailAddress}
+                  <FaEnvelope className='label-icon' /> {t.emailAddress}
                 </Form.Label>
                 <Form.Control
                   type='email'
-                  placeholder={vi.enterEmail}
+                  placeholder={t.enterEmail}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className='form-control-custom'
@@ -112,11 +111,11 @@ const ProfileScreen = () => {
 
               <Form.Group className='form-group-custom' controlId='password'>
                 <Form.Label className='form-label-custom'>
-                  <FaLock className='label-icon' /> {vi.password}
+                  <FaLock className='label-icon' /> {t.password}
                 </Form.Label>
                 <Form.Control
                   type='password'
-                  placeholder={vi.enterPassword}
+                  placeholder={t.enterPassword}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className='form-control-custom'
@@ -128,11 +127,11 @@ const ProfileScreen = () => {
                 controlId='confirmPassword'
               >
                 <Form.Label className='form-label-custom'>
-                  <FaLock className='label-icon' /> {vi.confirmPassword}
+                  <FaLock className='label-icon' /> {t.confirmPassword}
                 </Form.Label>
                 <Form.Control
                   type='password'
-                  placeholder={vi.confirmPassword}
+                  placeholder={t.confirmPassword}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className='form-control-custom'
@@ -146,7 +145,7 @@ const ProfileScreen = () => {
                   </>
                 ) : (
                   <>
-                    <FaCheckCircle /> {vi.update}
+                    <FaCheckCircle /> {t.update}
                   </>
                 )}
               </Button>
@@ -157,7 +156,7 @@ const ProfileScreen = () => {
         <div className='orders-section'>
           <div className='orders-card'>
             <div className='orders-header'>
-              <h2>{vi.myOrders}</h2>
+              <h2>{t.myOrders}</h2>
               <div className='orders-header-line'></div>
             </div>
 
@@ -169,18 +168,18 @@ const ProfileScreen = () => {
               </Message>
             ) : orders.length === 0 ? (
               <div className='empty-orders'>
-                <p>Bạn chưa có đơn hàng nào.</p>
+                <p>{t.noOrders}</p>
               </div>
             ) : (
               <div className='orders-table-container'>
                 <Table striped hover responsive className='orders-table'>
                   <thead>
                     <tr>
-                      <th>{vi.id}</th>
-                      <th>{vi.date}</th>
-                      <th>{vi.total}</th>
-                      <th>{vi.paid}</th>
-                      <th>{vi.delivered}</th>
+                      <th>{t.id}</th>
+                      <th>{t.date}</th>
+                      <th>{t.total}</th>
+                      <th>{t.paid}</th>
+                      <th>{t.delivered}</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -224,7 +223,7 @@ const ProfileScreen = () => {
                             to={`/order/${order._id}`}
                             className='btn-details'
                           >
-                            {vi.details}
+                            {t.details}
                           </Button>
                         </td>
                       </tr>

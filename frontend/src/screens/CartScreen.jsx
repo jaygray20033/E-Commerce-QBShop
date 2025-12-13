@@ -6,11 +6,12 @@ import { Row, Col, Image, Form, Button, Card } from 'react-bootstrap';
 import { FaTrash, FaArrowLeft } from 'react-icons/fa';
 import Message from '../components/Message';
 import { addToCart, removeFromCart } from '../slices/cartSlice';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import { formatPrice } from '../utils/formatPrice';
 import './CartScreen.css';
 
 const CartScreen = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -33,10 +34,10 @@ const CartScreen = () => {
     <div className='cart-container'>
       <div className='cart-header'>
         <button className='back-button' onClick={() => navigate('/')}>
-          <FaArrowLeft /> {vi.goBack}
+          <FaArrowLeft /> {t.goBack}
         </button>
         <div>
-          <h1 className='page-title'>{vi.shoppingCart}</h1>
+          <h1 className='page-title'>{t.shoppingCart}</h1>
         </div>
       </div>
 
@@ -45,7 +46,7 @@ const CartScreen = () => {
           {cartItems.length === 0 ? (
             <div className='empty-cart'>
               <Message>
-                {vi.emptyCart} <Link to='/'>{vi.goBack}</Link>
+                {t.emptyCart} <Link to='/'>{t.goBack}</Link>
               </Message>
             </div>
           ) : (
@@ -108,9 +109,9 @@ const CartScreen = () => {
         <Col lg={4} className='cart-summary-column'>
           <Card className='cart-summary-card'>
             <Card.Body>
-              <h2 className='summary-title'>{vi.orderSummary}</h2>
+              <h2 className='summary-title'>{t.orderSummary}</h2>
               <div className='summary-item'>
-                <span>{vi.subtotal}</span>
+                <span>{t.subtotal}</span>
                 <span className='summary-value'>
                   {formatPrice(
                     cartItems.reduce(
@@ -121,14 +122,14 @@ const CartScreen = () => {
                 </span>
               </div>
               <div className='summary-item'>
-                <span>{vi.items}</span>
+                <span>{t.items}</span>
                 <span className='summary-value'>
                   {cartItems.reduce((acc, item) => acc + item.qty, 0)}
                 </span>
               </div>
               <div className='summary-divider'></div>
               <div className='summary-total'>
-                <span>{vi.total}</span>
+                <span>{t.total}</span>
                 <span className='total-price'>
                   {formatPrice(
                     cartItems.reduce(
@@ -144,7 +145,7 @@ const CartScreen = () => {
                 disabled={cartItems.length === 0}
                 onClick={checkoutHandler}
               >
-                {vi.proceedCheckout}
+                {t.proceedCheckout}
               </Button>
             </Card.Body>
           </Card>

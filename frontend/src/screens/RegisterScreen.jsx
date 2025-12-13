@@ -9,10 +9,11 @@ import Loader from '../components/Loader';
 import { useRegisterMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import './LoginRegisterScreen.css';
 
 const RegisterScreen = () => {
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +40,7 @@ const RegisterScreen = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error(vi.passwordsDoNotMatch);
+      toast.error(t.passwordsDoNotMatch);
     } else {
       try {
         const res = await register({ name, email, password }).unwrap();
@@ -58,16 +59,16 @@ const RegisterScreen = () => {
           <Col xs={12} sm={10} md={8} lg={6} className='auth-col'>
             <div className='auth-card'>
               <div className='auth-header'>
-                <h1 className='auth-title'>{vi.register}</h1>
+                <h1 className='auth-title'>{t.register}</h1>
                 <p className='auth-subtitle'>アカウント作成して始めましょう</p>
               </div>
 
               <Form onSubmit={submitHandler} className='auth-form'>
                 <Form.Group className='form-group' controlId='name'>
-                  <Form.Label className='form-label'>{vi.name}</Form.Label>
+                  <Form.Label className='form-label'>{t.name}</Form.Label>
                   <Form.Control
                     type='text'
-                    placeholder={vi.enterName}
+                    placeholder={t.enterName}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className='form-input'
@@ -77,11 +78,11 @@ const RegisterScreen = () => {
 
                 <Form.Group className='form-group' controlId='email'>
                   <Form.Label className='form-label'>
-                    {vi.emailAddress}
+                    {t.emailAddress}
                   </Form.Label>
                   <Form.Control
                     type='email'
-                    placeholder={vi.enterEmail}
+                    placeholder={t.enterEmail}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className='form-input'
@@ -90,10 +91,10 @@ const RegisterScreen = () => {
                 </Form.Group>
 
                 <Form.Group className='form-group' controlId='password'>
-                  <Form.Label className='form-label'>{vi.password}</Form.Label>
+                  <Form.Label className='form-label'>{t.password}</Form.Label>
                   <Form.Control
                     type='password'
-                    placeholder={vi.enterPassword}
+                    placeholder={t.enterPassword}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className='form-input'
@@ -103,11 +104,11 @@ const RegisterScreen = () => {
 
                 <Form.Group className='form-group' controlId='confirmPassword'>
                   <Form.Label className='form-label'>
-                    {vi.confirmPassword}
+                    {t.confirmPassword}
                   </Form.Label>
                   <Form.Control
                     type='password'
-                    placeholder={vi.confirmPassword}
+                    placeholder={t.confirmPassword}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className='form-input'
@@ -120,18 +121,18 @@ const RegisterScreen = () => {
                   type='submit'
                   className='auth-submit-btn'
                 >
-                  {isLoading ? <Loader /> : vi.register}
+                  {isLoading ? <Loader /> : t.register}
                 </Button>
               </Form>
 
               <div className='auth-footer'>
                 <p className='auth-footer-text'>
-                  {vi.alreadyHaveAccount}{' '}
+                  {t.alreadyHaveAccount}{' '}
                   <Link
                     to={redirect ? `/login?redirect=${redirect}` : '/login'}
                     className='auth-link'
                   >
-                    {vi.login}
+                    {t.login}
                   </Link>
                 </p>
               </div>

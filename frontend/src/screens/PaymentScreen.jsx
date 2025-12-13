@@ -6,11 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import CheckoutSteps from '../components/CheckoutSteps';
 import { savePaymentMethod } from '../slices/cartSlice';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import { FaArrowLeft } from 'react-icons/fa';
 import './PaymentScreen.css';
 
 const PaymentScreen = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const cart = useSelector((state) => state.cart);
   const { shippingAddress } = cart;
@@ -34,10 +35,10 @@ const PaymentScreen = () => {
     <div className='payment-container'>
       <div className='payment-header'>
         <button className='back-button' onClick={() => navigate('/shipping')}>
-          <FaArrowLeft /> {vi.goBack}
+          <FaArrowLeft /> {t.goBack}
         </button>
         <div>
-          <h1 className='page-title'>{vi.paymentMethod}</h1>
+          <h1 className='page-title'>{t.paymentMethod}</h1>
         </div>
       </div>
 
@@ -47,7 +48,7 @@ const PaymentScreen = () => {
         <div className='payment-form-card'>
           <form onSubmit={submitHandler}>
             <div className='payment-options'>
-              <label className='form-label'>{vi.selectMethod}</label>
+              <label className='form-label'>{t.selectMethod}</label>
 
               <div className='radio-group'>
                 <label className='radio-option'>
@@ -58,13 +59,13 @@ const PaymentScreen = () => {
                     checked={paymentMethod === 'VNPay'}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
-                  <span className='radio-label-text'>{vi.vnpay}</span>
+                  <span className='radio-label-text'>{t.vnpay}</span>
                 </label>
               </div>
             </div>
 
             <Button type='submit' className='submit-btn'>
-              {vi.continue}
+              {t.continue}
             </Button>
           </form>
         </div>

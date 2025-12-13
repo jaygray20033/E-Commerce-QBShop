@@ -6,13 +6,15 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice';
 import { logout } from '../slices/authSlice';
 import SearchBox from './SearchBox';
+import LanguageSwitcher from './LanguageSwitcher';
 import { resetCart } from '../slices/cartSlice';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import './Header.css';
 
 const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth);
+  const { t } = useLanguage();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -105,6 +107,9 @@ const Header = () => {
 
         {/* Right Actions */}
         <div className='header-actions'>
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Cart */}
           <Link to='/cart' className='header-action-item cart-link'>
             <svg
@@ -154,7 +159,7 @@ const Header = () => {
                     onClick={handleNavigateToProfile}
                     className='dropdown-item'
                   >
-                    {vi.profile}
+                    {t.profile}
                   </button>
                   {userInfo.isAdmin && (
                     <>
@@ -163,25 +168,25 @@ const Header = () => {
                         onClick={handleNavigateToDashboard}
                         className='dropdown-item'
                       >
-                        {vi.dashboard}
+                        {t.dashboard}
                       </button>
                       <button
                         onClick={handleNavigateToProductList}
                         className='dropdown-item'
                       >
-                        {vi.products}
+                        {t.products}
                       </button>
                       <button
                         onClick={handleNavigateToOrderList}
                         className='dropdown-item'
                       >
-                        {vi.orders}
+                        {t.orders}
                       </button>
                       <button
                         onClick={handleNavigateToUserList}
                         className='dropdown-item'
                       >
-                        {vi.users}
+                        {t.users}
                       </button>
                       <hr className='dropdown-divider' />
                     </>
@@ -190,7 +195,7 @@ const Header = () => {
                     onClick={handleLogout}
                     className='dropdown-item logout'
                   >
-                    {vi.logout}
+                    {t.logout}
                   </button>
                 </div>
               )}
@@ -209,7 +214,7 @@ const Header = () => {
                 <polyline points='10 17 15 12 10 7'></polyline>
                 <line x1='15' y1='12' x2='3' y2='12'></line>
               </svg>
-              {vi.signin}
+              {t.signin}
             </Link>
           )}
         </div>

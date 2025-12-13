@@ -3,9 +3,11 @@ import { Carousel, Image } from 'react-bootstrap';
 import Message from './Message';
 import { useGetTopProductsQuery } from '../slices/productsApiSlice';
 import { formatPrice } from '../utils/formatPrice';
+import { useLanguage } from '../context/LanguageContext';
 import './ProductCarousel.css';
 
 const ProductCarousel = () => {
+  const { t } = useLanguage();
   const { data: products, isLoading, error } = useGetTopProductsQuery();
 
   return isLoading ? null : error ? (
@@ -32,7 +34,7 @@ const ProductCarousel = () => {
                 {/* Right side - Product Info */}
                 <div className='carousel-info-container'>
                   <div className='carousel-info-content'>
-                    <span className='carousel-badge'>Featured Product</span>
+                    <span className='carousel-badge'>{t.featuredProduct}</span>
                     <h1 className='carousel-title'>{product.name}</h1>
                     <p className='carousel-description'>
                       {product.description}
@@ -42,11 +44,11 @@ const ProductCarousel = () => {
                       <div className='carousel-rating'>
                         <span className='carousel-stars'>★★★★★</span>
                         <span className='carousel-reviews'>
-                          ({product.numReviews} reviews)
+                          ({product.numReviews} {t.reviews.toLowerCase()})
                         </span>
                       </div>
                       <div className='carousel-price-section'>
-                        <span className='carousel-price-label'>Price:</span>
+                        <span className='carousel-price-label'>{t.price}:</span>
                         <span className='carousel-price'>
                           {formatPrice(product.price)}
                         </span>
@@ -54,7 +56,7 @@ const ProductCarousel = () => {
                     </div>
 
                     <button className='carousel-cta-button'>
-                      View Product
+                      {t.viewProduct}
                       <svg
                         width='20'
                         height='20'

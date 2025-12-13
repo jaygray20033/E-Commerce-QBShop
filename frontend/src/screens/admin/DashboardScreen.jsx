@@ -30,12 +30,13 @@ import {
   useGetInventoryQuery,
   useUpdateStockMutation,
 } from '../../slices/productsApiSlice';
-import { vi } from '../../i18n/translations';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatPrice } from '../../utils/formatPrice';
 import { toast } from 'react-toastify';
 import './DashboardScreen.css';
 
 const DashboardScreen = () => {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [editingId, setEditingId] = useState(null);
@@ -78,7 +79,7 @@ const DashboardScreen = () => {
   const handleSaveStock = async (productId) => {
     try {
       await updateStock({ productId, countInStock: editStock }).unwrap();
-      toast.success(vi.stockUpdated);
+      toast.success(t.stockUpdated);
       setEditingId(null);
       refetch();
     } catch (err) {
@@ -90,19 +91,19 @@ const DashboardScreen = () => {
     if (count === 0) {
       return (
         <Badge bg='danger' className='stock-badge'>
-          <FaTimesCircle /> {vi.outOfStock}
+          <FaTimesCircle /> {t.outOfStock}
         </Badge>
       );
     } else if (count <= 10) {
       return (
         <Badge bg='warning' className='stock-badge'>
-          <FaExclamationTriangle /> {vi.lowStock}
+          <FaExclamationTriangle /> {t.lowStock}
         </Badge>
       );
     }
     return (
       <Badge bg='success' className='stock-badge'>
-        <FaCheckCircle /> {vi.inStock}
+        <FaCheckCircle /> {t.inStock}
       </Badge>
     );
   };
@@ -112,9 +113,9 @@ const DashboardScreen = () => {
       <div className='inventory-header'>
         <h1 className='inventory-title'>
           <FaWarehouse className='title-icon' />
-          {vi.inventoryManagement}
+          {t.inventoryManagement}
         </h1>
-        <p className='inventory-subtitle'>{vi.inventoryOverview}</p>
+        <p className='inventory-subtitle'>{t.inventoryOverview}</p>
       </div>
 
       {isLoading ? (
@@ -125,7 +126,6 @@ const DashboardScreen = () => {
         </Message>
       ) : (
         <>
-          {/* Stats Cards */}
           <Row className='stats-row'>
             <Col md={3} sm={6} className='mb-4'>
               <Card className='stat-card total-card'>
@@ -135,7 +135,7 @@ const DashboardScreen = () => {
                   </div>
                   <div className='stat-content'>
                     <h3 className='stat-value'>{data?.stats?.totalProducts}</h3>
-                    <p className='stat-label'>{vi.totalProducts}</p>
+                    <p className='stat-label'>{t.totalProducts}</p>
                   </div>
                 </Card.Body>
               </Card>
@@ -149,7 +149,7 @@ const DashboardScreen = () => {
                   </div>
                   <div className='stat-content'>
                     <h3 className='stat-value'>{data?.stats?.inStock}</h3>
-                    <p className='stat-label'>{vi.inStock}</p>
+                    <p className='stat-label'>{t.inStock}</p>
                   </div>
                 </Card.Body>
               </Card>
@@ -163,7 +163,7 @@ const DashboardScreen = () => {
                   </div>
                   <div className='stat-content'>
                     <h3 className='stat-value'>{data?.stats?.lowStock}</h3>
-                    <p className='stat-label'>{vi.lowStock}</p>
+                    <p className='stat-label'>{t.lowStock}</p>
                   </div>
                 </Card.Body>
               </Card>
@@ -177,14 +177,13 @@ const DashboardScreen = () => {
                   </div>
                   <div className='stat-content'>
                     <h3 className='stat-value'>{data?.stats?.outOfStock}</h3>
-                    <p className='stat-label'>{vi.outOfStock}</p>
+                    <p className='stat-label'>{t.outOfStock}</p>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
-          {/* Total Value Card */}
           <Row className='mb-4'>
             <Col>
               <Card className='value-card'>
@@ -194,14 +193,13 @@ const DashboardScreen = () => {
                     <h2 className='value-amount'>
                       {formatPrice(data?.stats?.totalValue || 0)}
                     </h2>
-                    <p className='value-label'>{vi.totalInventoryValue}</p>
+                    <p className='value-label'>{t.totalInventoryValue}</p>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
-          {/* Filters */}
           <Card className='filter-card mb-4'>
             <Card.Body>
               <Row className='align-items-center'>
@@ -212,7 +210,7 @@ const DashboardScreen = () => {
                     </InputGroup.Text>
                     <Form.Control
                       type='text'
-                      placeholder={vi.searchProduct}
+                      placeholder={t.searchProduct}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -224,37 +222,36 @@ const DashboardScreen = () => {
                     onChange={(e) => setFilterStatus(e.target.value)}
                     className='filter-select'
                   >
-                    <option value='all'>{vi.allProducts}</option>
-                    <option value='inStock'>{vi.inStockOnly}</option>
-                    <option value='lowStock'>{vi.lowStockOnly}</option>
-                    <option value='outOfStock'>{vi.outOfStockOnly}</option>
+                    <option value='all'>{t.allProducts}</option>
+                    <option value='inStock'>{t.inStockOnly}</option>
+                    <option value='lowStock'>{t.lowStockOnly}</option>
+                    <option value='outOfStock'>{t.outOfStockOnly}</option>
                   </Form.Select>
                 </Col>
               </Row>
             </Card.Body>
           </Card>
 
-          {/* Products Table */}
           <Card className='table-card'>
             <Card.Body className='p-0'>
               {filteredProducts.length === 0 ? (
                 <div className='no-products'>
                   <FaBoxOpen size={48} />
-                  <p>{vi.noProductsFound}</p>
+                  <p>{t.noProductsFound}</p>
                 </div>
               ) : (
                 <Table responsive className='inventory-table'>
                   <thead>
                     <tr>
-                      <th>{vi.image}</th>
-                      <th>{vi.product}</th>
-                      <th>{vi.brand}</th>
-                      <th>{vi.category}</th>
-                      <th>{vi.price}</th>
-                      <th>{vi.countInStock}</th>
-                      <th>{vi.stockStatus}</th>
-                      <th>{vi.stockValue}</th>
-                      <th>{vi.actions}</th>
+                      <th>{t.image}</th>
+                      <th>{t.product}</th>
+                      <th>{t.brand}</th>
+                      <th>{t.category}</th>
+                      <th>{t.price}</th>
+                      <th>{t.countInStock}</th>
+                      <th>{t.stockStatus}</th>
+                      <th>{t.stockValue}</th>
+                      <th>{t.actions}</th>
                     </tr>
                   </thead>
                   <tbody>

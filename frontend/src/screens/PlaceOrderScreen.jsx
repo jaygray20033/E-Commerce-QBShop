@@ -11,11 +11,12 @@ import CheckoutSteps from '../components/CheckoutSteps';
 import Loader from '../components/Loader';
 import { useCreateOrderMutation } from '../slices/ordersApiSlice';
 import { clearCartItems } from '../slices/cartSlice';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import { formatPrice } from '../utils/formatPrice';
 import './PlaceOrderScreen.css';
 
 const PlaceOrderScreen = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const cart = useSelector((state) => state.cart);
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
@@ -52,10 +53,10 @@ const PlaceOrderScreen = () => {
     <div className='placeorder-container'>
       <div className='placeorder-header'>
         <button className='back-button' onClick={() => navigate('/payment')}>
-          <FaArrowLeft /> {vi.goBack}
+          <FaArrowLeft /> {t.goBack}
         </button>
         <div>
-          <h1 className='page-title'>{vi.orderSummary}</h1>
+          <h1 className='page-title'>{t.orderSummary}</h1>
         </div>
       </div>
 
@@ -65,10 +66,10 @@ const PlaceOrderScreen = () => {
         <Col lg={8}>
           <div className='placeorder-details'>
             <div className='detail-card'>
-              <h2 className='detail-title'>{vi.shipping}</h2>
+              <h2 className='detail-title'>{t.shipping}</h2>
               <div className='detail-content'>
                 <p>
-                  <strong>{vi.address}:</strong> {cart.shippingAddress.address},
+                  <strong>{t.address}:</strong> {cart.shippingAddress.address},
                   {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{' '}
                   {cart.shippingAddress.country}
                 </p>
@@ -76,19 +77,19 @@ const PlaceOrderScreen = () => {
             </div>
 
             <div className='detail-card'>
-              <h2 className='detail-title'>{vi.paymentMethod}</h2>
+              <h2 className='detail-title'>{t.paymentMethod}</h2>
               <div className='detail-content'>
                 <p>
-                  <strong>{vi.method}:</strong> {cart.paymentMethod}
+                  <strong>{t.method}:</strong> {cart.paymentMethod}
                 </p>
               </div>
             </div>
 
             <div className='detail-card'>
-              <h2 className='detail-title'>{vi.orderItems}</h2>
+              <h2 className='detail-title'>{t.orderItems}</h2>
               <div className='order-items-list'>
                 {cart.cartItems.length === 0 ? (
-                  <Message>{vi.emptyCart}</Message>
+                  <Message>{t.emptyCart}</Message>
                 ) : (
                   cart.cartItems.map((item, index) => (
                     <div
@@ -133,24 +134,24 @@ const PlaceOrderScreen = () => {
         <Col lg={4}>
           <Card className='order-summary-card'>
             <Card.Body>
-              <h2 className='summary-title'>{vi.orderSummary}</h2>
+              <h2 className='summary-title'>{t.orderSummary}</h2>
 
               <div className='summary-row'>
-                <span>{vi.items}</span>
+                <span>{t.items}</span>
                 <span className='summary-value'>
                   {formatPrice(cart.itemsPrice)}
                 </span>
               </div>
 
               <div className='summary-row'>
-                <span>{vi.shipping}</span>
+                <span>{t.shipping}</span>
                 <span className='summary-value'>
                   {formatPrice(cart.shippingPrice)}
                 </span>
               </div>
 
               <div className='summary-row'>
-                <span>{vi.tax}</span>
+                <span>{t.tax}</span>
                 <span className='summary-value'>
                   {formatPrice(cart.taxPrice)}
                 </span>
@@ -159,7 +160,7 @@ const PlaceOrderScreen = () => {
               <div className='summary-divider'></div>
 
               <div className='summary-total'>
-                <span>{vi.total}</span>
+                <span>{t.total}</span>
                 <span className='total-amount'>
                   {formatPrice(cart.totalPrice)}
                 </span>
@@ -177,7 +178,7 @@ const PlaceOrderScreen = () => {
                 disabled={cart.cartItems.length === 0 || isLoading}
                 onClick={placeOrderHandler}
               >
-                {isLoading ? <Loader /> : vi.placeOrder}
+                {isLoading ? <Loader /> : t.placeOrder}
               </Button>
             </Card.Body>
           </Card>

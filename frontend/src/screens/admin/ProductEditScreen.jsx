@@ -12,11 +12,12 @@ import {
   useUploadProductImageMutation,
   useCreateProductMutation,
 } from '../../slices/productsApiSlice';
-import { vi } from '../../i18n/translations';
+import { useLanguage } from '../../context/LanguageContext';
 import { FaArrowLeft, FaUpload, FaSave, FaTimes } from 'react-icons/fa';
 import './ProductEditScreen.css';
 
 const ProductEditScreen = () => {
+  const { t } = useLanguage();
   const { id: productId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,7 +51,7 @@ const ProductEditScreen = () => {
     e.preventDefault();
 
     if (!name || !price || !brand || !category) {
-      toast.error('Vui lòng điền đầy đủ các trường bắt buộc');
+      toast.error(t.fillAllFields);
       return;
     }
 
@@ -65,7 +66,7 @@ const ProductEditScreen = () => {
           description,
           countInStock,
         }).unwrap();
-        toast.success(vi.productCreated);
+        toast.success(t.productCreated);
         navigate('/admin/productlist');
       } else {
         await updateProduct({
@@ -78,7 +79,7 @@ const ProductEditScreen = () => {
           description,
           countInStock,
         }).unwrap();
-        toast.success(vi.productUpdated);
+        toast.success(t.productUpdated);
         refetch();
         navigate('/admin/productlist');
       }
@@ -117,16 +118,14 @@ const ProductEditScreen = () => {
       <div className='edit-header-fixed'>
         <div className='header-content'>
           <Link to='/admin/productlist' className='back-link-custom'>
-            <FaArrowLeft /> {vi.goBack}
+            <FaArrowLeft /> {t.goBack}
           </Link>
           <div className='header-title-group'>
             <h1 className='edit-title'>
-              {isNewProduct ? 'Tạo Sản Phẩm Mới' : vi.editProduct}
+              {isNewProduct ? t.createNewProduct : t.editProduct}
             </h1>
             <p className='edit-subtitle'>
-              {isNewProduct
-                ? 'Điền thông tin để tạo sản phẩm mới'
-                : 'Cập nhật thông tin sản phẩm'}
+              {isNewProduct ? t.fillProductInfo : t.updateProductInfo}
             </p>
           </div>
         </div>
@@ -142,18 +141,18 @@ const ProductEditScreen = () => {
           <div className='form-section'>
             <div className='form-card'>
               <div className='form-card-header'>
-                <h2>Thông Tin Sản Phẩm</h2>
+                <h2>{t.productInfo}</h2>
               </div>
 
               <Form onSubmit={submitHandler} className='product-form'>
                 {/* Tên Sản Phẩm */}
                 <Form.Group controlId='name' className='form-group-custom'>
                   <Form.Label className='form-label-custom'>
-                    Tên Sản Phẩm <span className='required'>*</span>
+                    {t.productName} <span className='required'>*</span>
                   </Form.Label>
                   <Form.Control
                     type='text'
-                    placeholder='Nhập tên sản phẩm'
+                    placeholder={t.productName}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className='form-input'
@@ -164,11 +163,11 @@ const ProductEditScreen = () => {
                 {/* Giá */}
                 <Form.Group controlId='price' className='form-group-custom'>
                   <Form.Label className='form-label-custom'>
-                    Giá (VND) <span className='required'>*</span>
+                    {t.priceVND} <span className='required'>*</span>
                   </Form.Label>
                   <Form.Control
                     type='number'
-                    placeholder='Nhập giá sản phẩm'
+                    placeholder={t.price}
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     className='form-input'
@@ -179,11 +178,11 @@ const ProductEditScreen = () => {
                 {/* Thương Hiệu */}
                 <Form.Group controlId='brand' className='form-group-custom'>
                   <Form.Label className='form-label-custom'>
-                    Thương Hiệu <span className='required'>*</span>
+                    {t.brand} <span className='required'>*</span>
                   </Form.Label>
                   <Form.Control
                     type='text'
-                    placeholder='Nhập thương hiệu'
+                    placeholder={t.brand}
                     value={brand}
                     onChange={(e) => setBrand(e.target.value)}
                     className='form-input'
@@ -194,11 +193,11 @@ const ProductEditScreen = () => {
                 {/* Danh Mục */}
                 <Form.Group controlId='category' className='form-group-custom'>
                   <Form.Label className='form-label-custom'>
-                    Danh Mục <span className='required'>*</span>
+                    {t.category} <span className='required'>*</span>
                   </Form.Label>
                   <Form.Control
                     type='text'
-                    placeholder='Nhập danh mục'
+                    placeholder={t.category}
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className='form-input'
@@ -212,11 +211,11 @@ const ProductEditScreen = () => {
                   className='form-group-custom'
                 >
                   <Form.Label className='form-label-custom'>
-                    Số Lượng Tồn
+                    {t.countInStock}
                   </Form.Label>
                   <Form.Control
                     type='number'
-                    placeholder='Nhập số lượng tồn'
+                    placeholder={t.countInStock}
                     value={countInStock}
                     onChange={(e) => setCountInStock(e.target.value)}
                     className='form-input'
@@ -228,11 +227,13 @@ const ProductEditScreen = () => {
                   controlId='description'
                   className='form-group-custom'
                 >
-                  <Form.Label className='form-label-custom'>Mô Tả</Form.Label>
+                  <Form.Label className='form-label-custom'>
+                    {t.description}
+                  </Form.Label>
                   <Form.Control
                     as='textarea'
                     rows={4}
-                    placeholder='Nhập mô tả sản phẩm'
+                    placeholder={t.enterDescription}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className='form-input'
@@ -246,10 +247,10 @@ const ProductEditScreen = () => {
                     className='btn-save'
                     disabled={loadingCreate || loadingUpdate}
                   >
-                    <FaSave /> {isNewProduct ? 'Tạo Sản Phẩm' : vi.update}
+                    <FaSave /> {isNewProduct ? t.createProduct : t.update}
                   </Button>
                   <Link to='/admin/productlist' className='btn-cancel'>
-                    <FaTimes /> Hủy
+                    <FaTimes /> {t.cancel}
                   </Link>
                 </div>
               </Form>
@@ -260,7 +261,7 @@ const ProductEditScreen = () => {
           <div className='image-section'>
             <div className='image-card'>
               <div className='image-card-header'>
-                <h2>Hình Ảnh</h2>
+                <h2>{t.productImage}</h2>
               </div>
 
               <div className='image-preview'>
@@ -283,7 +284,7 @@ const ProductEditScreen = () => {
                       <circle cx='8.5' cy='8.5' r='1.5' />
                       <path d='M21 15l-5-5L5 21' />
                     </svg>
-                    <p>Chưa có hình ảnh</p>
+                    <p>{t.noImage}</p>
                   </div>
                 )}
               </div>
@@ -292,21 +293,23 @@ const ProductEditScreen = () => {
               <div className='upload-section'>
                 <Form.Group controlId='imageUrl' className='form-group-custom'>
                   <Form.Label className='form-label-custom'>
-                    URL Hình Ảnh
+                    {t.imageUrl}
                   </Form.Label>
                   <Form.Control
                     type='text'
-                    placeholder='Nhập URL'
+                    placeholder='URL'
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
                     className='form-input'
                   />
                 </Form.Group>
 
-                <div className='upload-divider'>hoặc</div>
+                <div className='upload-divider'>{t.or}</div>
 
                 <Form.Group controlId='imageFile' className='form-group-custom'>
-                  <Form.Label className='form-label-custom'>Tải Lên</Form.Label>
+                  <Form.Label className='form-label-custom'>
+                    {t.upload}
+                  </Form.Label>
                   <div className='file-upload-wrapper'>
                     <input
                       type='file'
@@ -316,7 +319,7 @@ const ProductEditScreen = () => {
                     />
                     <div className='file-upload-placeholder'>
                       <FaUpload />
-                      <span>Kéo thả hoặc click</span>
+                      <span>{t.dragOrClick}</span>
                     </div>
                   </div>
                   {loadingUpload && <Loader />}

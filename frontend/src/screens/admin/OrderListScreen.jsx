@@ -4,17 +4,18 @@ import Message from '../../components/Message';
 import Loader from '../../components/Loader';
 import { useGetOrdersQuery } from '../../slices/ordersApiSlice';
 import { Link } from 'react-router-dom';
-import { vi } from '../../i18n/translations';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatPrice } from '../../utils/formatPrice';
 import './OrderListScreen.css';
 
 const OrderListScreen = () => {
+  const { t } = useLanguage();
   const { data: orders, isLoading, error } = useGetOrdersQuery();
 
   return (
     <Container className='order-list-container'>
       <div className='admin-section-header'>
-        <h1 className='admin-section-title'>{vi.orders}</h1>
+        <h1 className='admin-section-title'>{t.orders}</h1>
       </div>
 
       {isLoading ? (
@@ -28,13 +29,13 @@ const OrderListScreen = () => {
           <Table striped hover responsive className='admin-orders-table'>
             <thead>
               <tr>
-                <th>{vi.id}</th>
-                <th>{vi.user}</th>
-                <th>{vi.date}</th>
-                <th>{vi.total}</th>
-                <th>{vi.isPaid}</th>
-                <th>{vi.isDelivered}</th>
-                <th>{vi.actions}</th>
+                <th>{t.id}</th>
+                <th>{t.user}</th>
+                <th>{t.date}</th>
+                <th>{t.total}</th>
+                <th>{t.isPaid}</th>
+                <th>{t.isDelivered}</th>
+                <th>{t.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +81,7 @@ const OrderListScreen = () => {
                       to={`/order/${order._id}`}
                       className='btn-details-order'
                     >
-                      {vi.details}
+                      {t.details}
                     </Button>
                   </td>
                 </tr>

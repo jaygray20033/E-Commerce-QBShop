@@ -22,7 +22,7 @@ import {
   useImportProductsFromExcelMutation,
 } from '../../slices/productsApiSlice';
 import { toast } from 'react-toastify';
-import { vi } from '../../i18n/translations';
+import { useLanguage } from '../../context/LanguageContext';
 import { formatPrice } from '../../utils/formatPrice';
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
@@ -74,6 +74,7 @@ const initialFormState = {
 };
 
 const ProductListScreen = () => {
+  const { t } = useLanguage();
   const { pageNumber } = useParams();
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -102,11 +103,11 @@ const ProductListScreen = () => {
     useImportProductsFromExcelMutation();
 
   const deleteHandler = async (id) => {
-    if (window.confirm(vi.confirmDelete)) {
+    if (window.confirm(t.confirmDelete)) {
       try {
         await deleteProduct(id);
         refetch();
-        toast.success(vi.productDeleted);
+        toast.success(t.productDeleted);
       } catch (err) {
         toast.error(err?.data?.message || err.error);
       }
@@ -133,15 +134,13 @@ const ProductListScreen = () => {
       !formData.description ||
       !formData.image
     ) {
-      toast.error(
-        'Vui lòng điền đầy đủ các trường bắt buộc: tên, giá, thương hiệu, danh mục, mô tả, ảnh'
-      );
+      toast.error(t.fillAllFields);
       return;
     }
 
     try {
       await createProduct(formData).unwrap();
-      toast.success(vi.productCreated);
+      toast.success(t.productCreated);
       setShowCreateModal(false);
       refetch();
       // Reset form
@@ -174,7 +173,7 @@ const ProductListScreen = () => {
             image: compressedImage,
           }));
         } catch (err) {
-          toast.error('Lỗi khi xử lý hình ảnh');
+          toast.error(t.imageProcessError);
         }
       };
       reader.readAsDataURL(file);
@@ -230,7 +229,7 @@ const ProductListScreen = () => {
           updated[index].imagePreview = compressedImage;
           setBulkProducts(updated);
         } catch (err) {
-          toast.error('Lỗi khi xử lý hình ảnh');
+          toast.error(t.imageProcessError);
         }
       };
       reader.readAsDataURL(file);
@@ -246,7 +245,7 @@ const ProductListScreen = () => {
       .map(({ imagePreview, ...rest }) => rest);
 
     if (validProducts.length === 0) {
-      toast.error(vi.noProductsToCreate);
+      toast.error(t.noProductsToCreate);
       return;
     }
 
@@ -292,9 +291,9 @@ const ProductListScreen = () => {
           const data = XLSX.utils.sheet_to_json(ws);
           setExcelProducts(data);
           setExcelImages({});
-          toast.success(`Đã đọc ${data.length} sản phẩm từ file Excel`);
+          toast.success(t.readProducts.replace('{count}', data.length));
         } catch (err) {
-          toast.error('Lỗi đọc file Excel');
+          toast.error(t.excelReadError);
         }
       };
       reader.readAsBinaryString(file);
@@ -313,7 +312,7 @@ const ProductListScreen = () => {
             [index]: compressedImage,
           }));
         } catch (err) {
-          toast.error('Lỗi khi xử lý hình ảnh');
+          toast.error(t.imageProcessError);
         }
       };
       reader.readAsDataURL(file);
@@ -322,7 +321,7 @@ const ProductListScreen = () => {
 
   const handleExcelImport = async () => {
     if (excelProducts.length === 0) {
-      toast.error('Chưa có dữ liệu từ file Excel');
+      toast.error(t.noExcelData);
       return;
     }
 
@@ -380,7 +379,7 @@ const ProductListScreen = () => {
       >
         <Modal.Header closeButton className='create-modal-header'>
           <Modal.Title className='create-modal-title'>
-            Tạo Sản Phẩm Mới
+            {t.createNewProduct}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className='create-modal-body'>
@@ -389,7 +388,7 @@ const ProductListScreen = () => {
               {/* Left Column - Image Upload */}
               <div className='form-image-section'>
                 <div className='image-upload-container'>
-                  <h3 className='section-title'>Hình Ảnh Sản Phẩm</h3>
+                  <h3 className='section-title'>{t.productImage}</h3>
                   <div className='image-preview-box'>
                     {imagePreview ? (
                       <img
@@ -411,7 +410,7 @@ const ProductListScreen = () => {
                           <circle cx='8.5' cy='8.5' r='1.5' />
                           <path d='M21 15l-5-5L5 21' />
                         </svg>
-                        <p>Chưa có hình ảnh</p>
+                        <p>{t.noImage}</p>
                       </div>
                     )}
                   </div>
@@ -425,12 +424,12 @@ const ProductListScreen = () => {
                     />
                     <label htmlFor='imageFile' className='file-upload-label'>
                       <FaUpload className='upload-icon' />
-                      <span>Chọn ảnh hoặc kéo thả</span>
+                      <span>{t.selectOrDragImage}</span>
                     </label>
                   </Form.Group>
                   <Form.Group className='mt-3'>
                     <Form.Label className='form-label-small'>
-                      Hoặc dán URL ảnh
+                      {t.orPasteUrl}
                     </Form.Label>
                     <Form.Control
                       type='text'
@@ -449,16 +448,16 @@ const ProductListScreen = () => {
 
               {/* Right Column - Product Info */}
               <div className='form-info-section'>
-                <h3 className='section-title'>Thông Tin Sản Phẩm</h3>
+                <h3 className='section-title'>{t.productInfo}</h3>
 
                 <Form.Group className='form-group-modern'>
                   <Form.Label className='form-label-required'>
-                    Tên Sản Phẩm <span className='required-badge'>*</span>
+                    {t.productName} <span className='required-badge'>*</span>
                   </Form.Label>
                   <Form.Control
                     type='text'
                     name='name'
-                    placeholder='VD: iPhone 15 Pro Max'
+                    placeholder='iPhone 15 Pro Max'
                     value={formData.name}
                     onChange={handleFormChange}
                     className='form-input-modern'
@@ -468,7 +467,7 @@ const ProductListScreen = () => {
 
                 <Form.Group className='form-group-modern'>
                   <Form.Label className='form-label-required'>
-                    Giá (VND) <span className='required-badge'>*</span>
+                    {t.priceVND} <span className='required-badge'>*</span>
                   </Form.Label>
                   <Form.Control
                     type='number'
@@ -484,12 +483,12 @@ const ProductListScreen = () => {
                 <div className='form-row'>
                   <Form.Group className='form-group-modern'>
                     <Form.Label className='form-label-required'>
-                      Thương Hiệu <span className='required-badge'>*</span>
+                      {t.brand} <span className='required-badge'>*</span>
                     </Form.Label>
                     <Form.Control
                       type='text'
                       name='brand'
-                      placeholder='VD: Apple'
+                      placeholder='Apple'
                       value={formData.brand}
                       onChange={handleFormChange}
                       className='form-input-modern'
@@ -499,12 +498,12 @@ const ProductListScreen = () => {
 
                   <Form.Group className='form-group-modern'>
                     <Form.Label className='form-label-required'>
-                      Danh Mục <span className='required-badge'>*</span>
+                      {t.category} <span className='required-badge'>*</span>
                     </Form.Label>
                     <Form.Control
                       type='text'
                       name='category'
-                      placeholder='VD: Điện thoại'
+                      placeholder='Electronics'
                       value={formData.category}
                       onChange={handleFormChange}
                       className='form-input-modern'
@@ -514,7 +513,7 @@ const ProductListScreen = () => {
                 </div>
 
                 <Form.Group className='form-group-modern'>
-                  <Form.Label>Số Lượng Tồn</Form.Label>
+                  <Form.Label>{t.countInStock}</Form.Label>
                   <Form.Control
                     type='number'
                     name='countInStock'
@@ -526,12 +525,12 @@ const ProductListScreen = () => {
                 </Form.Group>
 
                 <Form.Group className='form-group-modern'>
-                  <Form.Label>Mô Tả</Form.Label>
+                  <Form.Label>{t.description}</Form.Label>
                   <Form.Control
                     as='textarea'
                     rows={3}
                     name='description'
-                    placeholder='Nhập mô tả chi tiết sản phẩm...'
+                    placeholder={t.enterDescription}
                     value={formData.description}
                     onChange={handleFormChange}
                     className='form-input-modern'
@@ -548,7 +547,7 @@ const ProductListScreen = () => {
                 className='btn-cancel-modern'
                 onClick={handleModalClose}
               >
-                Hủy
+                {t.cancel}
               </Button>
               <Button
                 variant='primary'
@@ -556,7 +555,7 @@ const ProductListScreen = () => {
                 disabled={loadingCreate}
                 className='btn-submit-modern'
               >
-                {loadingCreate ? 'Đang tạo...' : 'Tạo Sản Phẩm'}
+                {loadingCreate ? t.creating : t.createProduct}
               </Button>
             </div>
           </Form>
@@ -573,7 +572,7 @@ const ProductListScreen = () => {
       >
         <Modal.Header closeButton className='create-modal-header'>
           <Modal.Title className='create-modal-title'>
-            {vi.createBulkProducts}
+            {t.createBulkProducts}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className='create-modal-body'>
@@ -583,7 +582,7 @@ const ProductListScreen = () => {
                 <div key={index} className='bulk-product-item'>
                   <div className='bulk-product-header'>
                     <span className='bulk-product-index'>
-                      {vi.productIndex} #{index + 1}
+                      {t.productIndex} #{index + 1}
                     </span>
                     {bulkProducts.length > 1 && (
                       <Button
@@ -598,19 +597,19 @@ const ProductListScreen = () => {
                   </div>
                   <div className='bulk-product-fields'>
                     <Form.Group className='bulk-field'>
-                      <Form.Label>Tên *</Form.Label>
+                      <Form.Label>{t.name} *</Form.Label>
                       <Form.Control
                         type='text'
                         value={product.name}
                         onChange={(e) =>
                           handleBulkProductChange(index, 'name', e.target.value)
                         }
-                        placeholder='Tên sản phẩm'
+                        placeholder={t.productName}
                         required
                       />
                     </Form.Group>
                     <Form.Group className='bulk-field'>
-                      <Form.Label>Giá *</Form.Label>
+                      <Form.Label>{t.price} *</Form.Label>
                       <Form.Control
                         type='number'
                         value={product.price}
@@ -626,7 +625,7 @@ const ProductListScreen = () => {
                       />
                     </Form.Group>
                     <Form.Group className='bulk-field'>
-                      <Form.Label>Thương hiệu *</Form.Label>
+                      <Form.Label>{t.brand} *</Form.Label>
                       <Form.Control
                         type='text'
                         value={product.brand}
@@ -637,12 +636,12 @@ const ProductListScreen = () => {
                             e.target.value
                           )
                         }
-                        placeholder='Thương hiệu'
+                        placeholder={t.brand}
                         required
                       />
                     </Form.Group>
                     <Form.Group className='bulk-field'>
-                      <Form.Label>Danh mục *</Form.Label>
+                      <Form.Label>{t.category} *</Form.Label>
                       <Form.Control
                         type='text'
                         value={product.category}
@@ -653,12 +652,12 @@ const ProductListScreen = () => {
                             e.target.value
                           )
                         }
-                        placeholder='Danh mục'
+                        placeholder={t.category}
                         required
                       />
                     </Form.Group>
                     <Form.Group className='bulk-field'>
-                      <Form.Label>Số lượng</Form.Label>
+                      <Form.Label>{t.countInStock}</Form.Label>
                       <Form.Control
                         type='number'
                         value={product.countInStock}
@@ -673,7 +672,7 @@ const ProductListScreen = () => {
                       />
                     </Form.Group>
                     <Form.Group className='bulk-field bulk-field-wide'>
-                      <Form.Label>Mô tả *</Form.Label>
+                      <Form.Label>{t.description} *</Form.Label>
                       <Form.Control
                         type='text'
                         value={product.description}
@@ -684,12 +683,12 @@ const ProductListScreen = () => {
                             e.target.value
                           )
                         }
-                        placeholder='Mô tả sản phẩm'
+                        placeholder={t.description}
                         required
                       />
                     </Form.Group>
                     <Form.Group className='bulk-field bulk-field-image'>
-                      <Form.Label>Hình ảnh</Form.Label>
+                      <Form.Label>{t.image}</Form.Label>
                       <div className='bulk-image-upload'>
                         <input
                           type='file'
@@ -711,7 +710,7 @@ const ProductListScreen = () => {
                           ) : (
                             <div className='bulk-image-placeholder'>
                               <FaUpload />
-                              <span>Chọn ảnh</span>
+                              <span>{t.selectOrDragImage}</span>
                             </div>
                           )}
                         </label>
@@ -728,7 +727,7 @@ const ProductListScreen = () => {
                 onClick={handleAddBulkProduct}
                 className='add-product-btn'
               >
-                <FaPlus /> {vi.addProduct}
+                <FaPlus /> {t.addProduct}
               </Button>
             </div>
             <div className='form-actions-modern'>
@@ -737,7 +736,7 @@ const ProductListScreen = () => {
                 className='btn-cancel-modern'
                 onClick={handleBulkModalClose}
               >
-                Hủy
+                {t.cancel}
               </Button>
               <Button
                 variant='primary'
@@ -746,8 +745,8 @@ const ProductListScreen = () => {
                 className='btn-submit-modern'
               >
                 {loadingBulk
-                  ? 'Đang tạo...'
-                  : `Tạo ${bulkProducts.length} Sản Phẩm`}
+                  ? t.creating
+                  : `${t.createProduct} (${bulkProducts.length})`}
               </Button>
             </div>
           </Form>
@@ -764,27 +763,25 @@ const ProductListScreen = () => {
       >
         <Modal.Header closeButton className='create-modal-header'>
           <Modal.Title className='create-modal-title'>
-            <FaFileExcel className='me-2' /> {vi.importExcel}
+            <FaFileExcel className='me-2' /> {t.importExcel}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className='create-modal-body'>
           <div className='excel-import-container'>
             <div className='excel-template-section'>
-              <h5>Bước 1: Tải file mẫu Excel</h5>
-              <p className='text-muted'>
-                Tải file mẫu và điền thông tin sản phẩm theo định dạng
-              </p>
+              <h5>{t.step1DownloadTemplate}</h5>
+              <p className='text-muted'>{t.step1Desc}</p>
               <Button
                 variant='outline-success'
                 onClick={downloadExcelTemplate}
                 className='download-template-btn'
               >
-                <FaDownload /> {vi.downloadTemplate}
+                <FaDownload /> {t.downloadTemplate}
               </Button>
             </div>
 
             <div className='excel-upload-section'>
-              <h5>Bước 2: Upload file Excel</h5>
+              <h5>{t.step2UploadExcel}</h5>
               <div className='excel-upload-box'>
                 <input
                   type='file'
@@ -795,9 +792,7 @@ const ProductListScreen = () => {
                 />
                 <label htmlFor='excelFile' className='excel-upload-label'>
                   <FaFileExcel className='excel-icon' />
-                  <span>
-                    {excelFileName || 'Chọn file Excel (.xlsx, .xls)'}
-                  </span>
+                  <span>{excelFileName || t.selectExcelFile}</span>
                 </label>
               </div>
             </div>
@@ -805,22 +800,22 @@ const ProductListScreen = () => {
             {excelProducts.length > 0 && (
               <div className='excel-preview-section'>
                 <h5>
-                  Bước 3: Thêm hình ảnh cho sản phẩm{' '}
-                  <Badge bg='primary'>{excelProducts.length} sản phẩm</Badge>
+                  {t.step3AddImages}{' '}
+                  <Badge bg='primary'>
+                    {excelProducts.length} {t.products.toLowerCase()}
+                  </Badge>
                 </h5>
-                <p className='text-muted'>
-                  Click vào ô hình ảnh để upload ảnh cho từng sản phẩm
-                </p>
+                <p className='text-muted'>{t.clickToUploadImage}</p>
                 <div className='excel-preview-table'>
                   <Table striped bordered hover size='sm'>
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Tên</th>
-                        <th>Giá</th>
-                        <th>Thương hiệu</th>
-                        <th>Danh mục</th>
-                        <th>Hình ảnh</th>
+                        <th>{t.name}</th>
+                        <th>{t.price}</th>
+                        <th>{t.brand}</th>
+                        <th>{t.category}</th>
+                        <th>{t.image}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -892,7 +887,7 @@ const ProductListScreen = () => {
               className='btn-cancel-modern'
               onClick={handleExcelModalClose}
             >
-              Hủy
+              {t.cancel}
             </Button>
             <Button
               variant='success'
@@ -901,8 +896,8 @@ const ProductListScreen = () => {
               className='btn-submit-modern btn-excel-import'
             >
               {loadingExcel
-                ? 'Đang import...'
-                : `Import ${excelProducts.length} Sản Phẩm`}
+                ? t.importing
+                : `${t.importExcel} (${excelProducts.length})`}
             </Button>
           </div>
         </Modal.Body>
@@ -910,25 +905,25 @@ const ProductListScreen = () => {
 
       <Row className='align-items-center admin-header'>
         <Col>
-          <h1 className='admin-title'>{vi.products}</h1>
+          <h1 className='admin-title'>{t.products}</h1>
         </Col>
         <Col className='text-end admin-actions'>
           <Button
             className='excel-btn me-2'
             onClick={handleExcelModalOpen}
-            title={vi.importExcel}
+            title={t.importExcel}
           >
-            <FaFileExcel /> {vi.importExcel}
+            <FaFileExcel /> {t.importExcel}
           </Button>
           <Button
             className='bulk-btn me-2'
             onClick={handleBulkModalOpen}
-            title={vi.createBulkProducts}
+            title={t.createBulkProducts}
           >
-            <FaPlus /> {vi.createBulkProducts}
+            <FaPlus /> {t.createBulkProducts}
           </Button>
           <Button className='create-btn' onClick={createProductHandler}>
-            <FaPlus /> {vi.createProduct}
+            <FaPlus /> {t.createProduct}
           </Button>
         </Col>
       </Row>
@@ -945,12 +940,12 @@ const ProductListScreen = () => {
             <Table striped bordered hover responsive className='admin-table'>
               <thead>
                 <tr>
-                  <th>{vi.id}</th>
-                  <th>{vi.name}</th>
-                  <th>{vi.price}</th>
-                  <th>{vi.category}</th>
-                  <th>{vi.brand}</th>
-                  <th className='actions-col'>{vi.actions}</th>
+                  <th>{t.id}</th>
+                  <th>{t.name}</th>
+                  <th>{t.price}</th>
+                  <th>{t.category}</th>
+                  <th>{t.brand}</th>
+                  <th className='actions-col'>{t.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -973,7 +968,7 @@ const ProductListScreen = () => {
                         to={`/admin/product/${product._id}/edit`}
                         variant='light'
                         className='edit-btn mx-2'
-                        title={vi.edit}
+                        title={t.edit}
                       >
                         <FaEdit />
                       </Button>
@@ -981,7 +976,7 @@ const ProductListScreen = () => {
                         variant='danger'
                         className='delete-btn'
                         onClick={() => deleteHandler(product._id)}
-                        title={vi.delete}
+                        title={t.delete}
                       >
                         <FaTrash style={{ color: 'white' }} />
                       </Button>

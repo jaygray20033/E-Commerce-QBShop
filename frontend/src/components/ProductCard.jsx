@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Rating from './Rating';
+import { useLanguage } from '../context/LanguageContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
+  const { t } = useLanguage();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -27,9 +29,9 @@ const ProductCard = ({ product }) => {
 
             {/* Floating Badge */}
             {product.countInStock === 0 ? (
-              <div className='product-badge out-of-stock'>Out of Stock</div>
+              <div className='product-badge out-of-stock'>{t.outOfStock}</div>
             ) : product.countInStock < 5 ? (
-              <div className='product-badge limited'>Limited Stock</div>
+              <div className='product-badge limited'>{t.lowStock}</div>
             ) : null}
 
             {/* Overlay on Hover */}
@@ -46,7 +48,7 @@ const ProductCard = ({ product }) => {
             <div className='product-rating'>
               <Rating
                 value={product.rating}
-                text={`${product.numReviews} reviews`}
+                text={`${product.numReviews} ${t.reviews}`}
               />
             </div>
 
@@ -69,7 +71,9 @@ const ProductCard = ({ product }) => {
                   product.countInStock > 0 ? 'in-stock' : 'out-of-stock'
                 }`}
               >
-                {product.countInStock > 0 ? '✓ In Stock' : '✗ Out of Stock'}
+                {product.countInStock > 0
+                  ? `✓ ${t.inStock}`
+                  : `✗ ${t.outOfStock}`}
               </span>
             </div>
           </div>
@@ -88,7 +92,7 @@ const ProductCard = ({ product }) => {
                 <circle cx='20' cy='21' r='1'></circle>
                 <path d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'></path>
               </svg>
-              Add to Cart
+              {t.addToCart}
             </button>
           </div>
         </div>

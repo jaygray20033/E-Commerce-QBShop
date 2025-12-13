@@ -13,10 +13,11 @@ import {
   usePayOrderMutation,
   useGetVNPayConfigQuery,
 } from '../slices/ordersApiSlice';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import './OrderScreen.css';
 
 const OrderScreen = () => {
+  const { t } = useLanguage();
   const { id: orderId } = useParams();
   const [isProcessingVNPay, setIsProcessingVNPay] = useState(false);
 
@@ -45,7 +46,7 @@ const OrderScreen = () => {
 
   const handleVNPayPayment = async () => {
     if (!order || order.isPaid) {
-      toast.error('Không thể thanh toán đơn hàng này');
+      toast.error(t.orderNotPaid);
       return;
     }
 
@@ -67,13 +68,13 @@ const OrderScreen = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Lỗi tạo URL thanh toán');
+        throw new Error(data.message || t.createPaymentUrlError);
       }
 
       // Redirect to VNPay payment page
       window.location.href = data.paymentUrl;
     } catch (err) {
-      toast.error(err.message || 'Lỗi khi xử lý thanh toán');
+      toast.error(err.message || t.paymentError);
       setIsProcessingVNPay(false);
     }
   };
@@ -99,13 +100,13 @@ const OrderScreen = () => {
         >
           <polyline points='15 18 9 12 15 6'></polyline>
         </svg>
-        {vi.goBack}
+        {t.goBack}
       </Link>
 
       <div className='order-container'>
         <div className='order-header'>
           <h1 className='order-title'>
-            {vi.paymentInfo} <span>{order._id}</span>
+            {t.paymentInfo} <span>{order._id}</span>
           </h1>
         </div>
 
@@ -115,11 +116,11 @@ const OrderScreen = () => {
             {/* Shipping Info Card */}
             <div className='info-card'>
               <div className='card-header'>
-                <h2 className='card-title'>{vi.shipping}</h2>
+                <h2 className='card-title'>{t.shipping}</h2>
               </div>
               <div className='card-content'>
                 <div className='info-row'>
-                  <strong>{vi.login}:</strong>
+                  <strong>{t.login}:</strong>
                   <span>{order.user.name}</span>
                 </div>
                 <div className='info-row'>
@@ -127,7 +128,7 @@ const OrderScreen = () => {
                   <a href={`mailto:${order.user.email}`}>{order.user.email}</a>
                 </div>
                 <div className='info-row'>
-                  <strong>{vi.address}:</strong>
+                  <strong>{t.address}:</strong>
                   <span>
                     {order.shippingAddress.address},{' '}
                     {order.shippingAddress.city}{' '}
@@ -138,11 +139,11 @@ const OrderScreen = () => {
                 <div className='status-row'>
                   {order.isDelivered ? (
                     <div className='status-badge success'>
-                      ✓ {vi.delivered}: {order.deliveredAt}
+                      ✓ {t.delivered}: {order.deliveredAt}
                     </div>
                   ) : (
                     <div className='status-badge danger'>
-                      ✕ {vi.notDelivered}
+                      ✕ {t.notDelivered}
                     </div>
                   )}
                 </div>
@@ -152,20 +153,20 @@ const OrderScreen = () => {
             {/* Payment Method Card */}
             <div className='info-card'>
               <div className='card-header'>
-                <h2 className='card-title'>{vi.paymentMethod}</h2>
+                <h2 className='card-title'>{t.paymentMethod}</h2>
               </div>
               <div className='card-content'>
                 <div className='info-row'>
-                  <strong>{vi.method}:</strong>
+                  <strong>{t.method}:</strong>
                   <span>{order.paymentMethod}</span>
                 </div>
                 <div className='status-row'>
                   {order.isPaid ? (
                     <div className='status-badge success'>
-                      ✓ {vi.paid}: {order.paidAt}
+                      ✓ {t.paid}: {order.paidAt}
                     </div>
                   ) : (
-                    <div className='status-badge danger'>✕ {vi.notPaid}</div>
+                    <div className='status-badge danger'>✕ {t.notPaid}</div>
                   )}
                 </div>
               </div>
@@ -174,11 +175,11 @@ const OrderScreen = () => {
             {/* Order Items Card */}
             <div className='info-card'>
               <div className='card-header'>
-                <h2 className='card-title'>{vi.orderItems}</h2>
+                <h2 className='card-title'>{t.orderItems}</h2>
               </div>
               <div className='card-content'>
                 {order.orderItems.length === 0 ? (
-                  <Message>{vi.orderIsEmpty}</Message>
+                  <Message>{t.orderIsEmpty}</Message>
                 ) : (
                   <div className='items-list'>
                     {order.orderItems.map((item, index) => (
@@ -214,24 +215,24 @@ const OrderScreen = () => {
           <div className='order-summary-section'>
             <div className='summary-card'>
               <div className='card-header'>
-                <h2 className='card-title'>{vi.orderSummary}</h2>
+                <h2 className='card-title'>{t.orderSummary}</h2>
               </div>
               <div className='card-content'>
                 <div className='summary-row'>
-                  <span>{vi.items}</span>
+                  <span>{t.items}</span>
                   <strong>{formatPrice(order.itemsPrice)}</strong>
                 </div>
                 <div className='summary-row'>
-                  <span>{vi.shipping}</span>
+                  <span>{t.shipping}</span>
                   <strong>{formatPrice(order.shippingPrice)}</strong>
                 </div>
                 <div className='summary-row'>
-                  <span>{vi.tax}</span>
+                  <span>{t.tax}</span>
                   <strong>{formatPrice(order.taxPrice)}</strong>
                 </div>
                 <div className='summary-divider'></div>
                 <div className='summary-row total'>
-                  <span>{vi.total}</span>
+                  <span>{t.total}</span>
                   <strong>{formatPrice(order.totalPrice)}</strong>
                 </div>
 
@@ -242,7 +243,7 @@ const OrderScreen = () => {
                     onClick={handleVNPayPayment}
                     disabled={isProcessingVNPay}
                   >
-                    {isProcessingVNPay ? 'Đang xử lý...' : 'Thanh Toán VNPay'}
+                    {isProcessingVNPay ? t.processing : t.payWithVNPay}
                   </button>
                 )}
 
@@ -256,7 +257,7 @@ const OrderScreen = () => {
                       onClick={deliverHandler}
                       disabled={loadingDeliver}
                     >
-                      {loadingDeliver ? 'Đang cập nhật...' : vi.markAsDelivered}
+                      {loadingDeliver ? t.updating : t.markAsDelivered}
                     </button>
                   )}
               </div>

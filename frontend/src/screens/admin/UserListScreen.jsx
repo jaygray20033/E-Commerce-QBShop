@@ -8,16 +8,17 @@ import {
 } from '../../slices/usersApiSlice';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-import { vi } from '../../i18n/translations';
+import { useLanguage } from '../../context/LanguageContext';
 import './UserListScreen.css';
 
 const UserListScreen = () => {
+  const { t } = useLanguage();
   const { data: users, refetch, isLoading, error } = useGetUsersQuery();
 
   const [deleteUser] = useDeleteUserMutation();
 
   const deleteHandler = async (id) => {
-    if (window.confirm(vi.deleteConfirm)) {
+    if (window.confirm(t.deleteConfirm)) {
       try {
         await deleteUser(id);
         refetch();
@@ -30,7 +31,7 @@ const UserListScreen = () => {
   return (
     <Container className='user-list-container'>
       <div className='admin-section-header'>
-        <h1 className='admin-section-title'>{vi.users}</h1>
+        <h1 className='admin-section-title'>{t.users}</h1>
       </div>
 
       {isLoading ? (
@@ -44,11 +45,11 @@ const UserListScreen = () => {
           <Table striped hover responsive className='admin-users-table'>
             <thead>
               <tr>
-                <th>{vi.id}</th>
-                <th>{vi.name}</th>
-                <th>{vi.email}</th>
-                <th>{vi.isAdmin}</th>
-                <th>{vi.actions}</th>
+                <th>{t.id}</th>
+                <th>{t.name}</th>
+                <th>{t.email}</th>
+                <th>{t.isAdmin}</th>
+                <th>{t.actions}</th>
               </tr>
             </thead>
             <tbody>

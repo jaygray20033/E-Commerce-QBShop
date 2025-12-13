@@ -6,11 +6,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import CheckoutSteps from '../components/CheckoutSteps';
 import { saveShippingAddress } from '../slices/cartSlice';
-import { vi } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
 import { FaArrowLeft } from 'react-icons/fa';
 import './ShippingScreen.css';
 
 const ShippingScreen = () => {
+  const { t } = useLanguage();
   const cart = useSelector((state) => state.cart);
   const { shippingAddress } = cart;
 
@@ -34,10 +35,10 @@ const ShippingScreen = () => {
     <div className='shipping-container'>
       <div className='shipping-header'>
         <button className='back-button' onClick={() => navigate('/cart')}>
-          <FaArrowLeft /> {vi.goBack}
+          <FaArrowLeft /> {t.goBack}
         </button>
         <div>
-          <h1 className='page-title'>{vi.shipping}</h1>
+          <h1 className='page-title'>{t.shipping}</h1>
         </div>
       </div>
 
@@ -47,10 +48,10 @@ const ShippingScreen = () => {
         <div className='shipping-form-card'>
           <form onSubmit={submitHandler}>
             <div className='form-group-custom'>
-              <label className='form-label'>{vi.address}</label>
+              <label className='form-label'>{t.address}</label>
               <input
                 type='text'
-                placeholder={vi.enterAddress}
+                placeholder={t.enterAddress}
                 value={address}
                 required
                 onChange={(e) => setAddress(e.target.value)}
@@ -59,10 +60,10 @@ const ShippingScreen = () => {
             </div>
 
             <div className='form-group-custom'>
-              <label className='form-label'>{vi.city}</label>
+              <label className='form-label'>{t.city}</label>
               <input
                 type='text'
-                placeholder={vi.enterCity}
+                placeholder={t.enterCity}
                 value={city}
                 required
                 onChange={(e) => setCity(e.target.value)}
@@ -71,10 +72,10 @@ const ShippingScreen = () => {
             </div>
 
             <div className='form-group-custom'>
-              <label className='form-label'>{vi.postalCode}</label>
+              <label className='form-label'>{t.postalCode}</label>
               <input
                 type='text'
-                placeholder={vi.enterPostalCode}
+                placeholder={t.enterPostalCode}
                 value={postalCode}
                 required
                 onChange={(e) => setPostalCode(e.target.value)}
@@ -83,10 +84,10 @@ const ShippingScreen = () => {
             </div>
 
             <div className='form-group-custom'>
-              <label className='form-label'>{vi.country}</label>
+              <label className='form-label'>{t.country}</label>
               <input
                 type='text'
-                placeholder={vi.enterCountry}
+                placeholder={t.enterCountry}
                 value={country}
                 required
                 onChange={(e) => setCountry(e.target.value)}
@@ -95,7 +96,7 @@ const ShippingScreen = () => {
             </div>
 
             <Button type='submit' className='submit-btn'>
-              {vi.continue}
+              {t.continue}
             </Button>
           </form>
         </div>
