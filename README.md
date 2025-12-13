@@ -5,6 +5,7 @@ A modern, feature-rich ecommerce application built with React and Node.js that e
 ## 🌟 Features
 
 ### User Features
+
 - **User Authentication**: Secure registration and login with JWT token-based authentication
 - **Product Browsing**: Browse products with filtering, searching, and pagination
 - **Shopping Cart**: Add/remove products, persistent cart storage
@@ -16,15 +17,17 @@ A modern, feature-rich ecommerce application built with React and Node.js that e
 - **Multi-language Support**: Built-in internationalization support
 
 ### Admin Features
+
 - **Product Management**: Create, edit, delete, and upload product images
 - **User Management**: View all users, edit user roles, delete users
 - **Order Management**: View all orders, update order status, manage deliveries
-- **Sales Analytics**: Track orders and sales data
+- **Inventory Management**: Track stock levels, low stock alerts, and manage product inventory
 - **Admin Dashboard**: Comprehensive dashboard for managing the platform
 
 ## 🛠 Tech Stack
 
 ### Frontend
+
 - **React 18**: JavaScript library for building user interfaces
 - **Redux Toolkit**: State management solution
 - **React Router v6**: Client-side routing
@@ -35,6 +38,7 @@ A modern, feature-rich ecommerce application built with React and Node.js that e
 - **PayPal React SDK**: PayPal payment integration
 
 ### Backend
+
 - **Node.js**: JavaScript runtime
 - **Express.js**: Web application framework
 - **MongoDB**: NoSQL database
@@ -47,6 +51,7 @@ A modern, feature-rich ecommerce application built with React and Node.js that e
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - MongoDB database
 - npm or yarn package manager
@@ -54,36 +59,45 @@ A modern, feature-rich ecommerce application built with React and Node.js that e
 ### Installation
 
 #### 1. Clone the repository
+
 \`\`\`bash
 git clone https://github.com/jaygray20033/QBShop.git
 cd QBShop
 \`\`\`
 
 #### 2. Backend Setup
+
 \`\`\`bash
 cd backend
 
 # Install dependencies
+
 npm install
 
 # Create .env file and add environment variables
+
 # DATABASE_URL, JWT_SECRET, PAYPAL_CLIENT_ID, VNPAY_TMN_CODE, etc.
 
 # Run seeder (optional - to populate sample data)
+
 npm run seed
 
 # Start backend server
+
 npm start
 \`\`\`
 
 #### 3. Frontend Setup
+
 \`\`\`bash
 cd frontend
 
 # Install dependencies
+
 npm install
 
 # Start development server
+
 npm start
 \`\`\`
 
@@ -92,6 +106,7 @@ The application will open at `http://localhost:3000`
 ## 📡 API Endpoints
 
 ### Authentication
+
 - `POST /api/users/register` - User registration
 - `POST /api/users/login` - User login
 - `POST /api/users/logout` - User logout
@@ -99,6 +114,7 @@ The application will open at `http://localhost:3000`
 - `PUT /api/users/profile` - Update user profile
 
 ### Products
+
 - `GET /api/products` - Get all products (with pagination and filtering)
 - `GET /api/products/:id` - Get product details
 - `POST /api/products` - Create product (Admin)
@@ -106,6 +122,7 @@ The application will open at `http://localhost:3000`
 - `DELETE /api/products/:id` - Delete product (Admin)
 
 ### Orders
+
 - `POST /api/orders` - Create new order
 - `GET /api/orders/myorders` - Get user's orders
 - `GET /api/orders/:id` - Get order details
@@ -113,6 +130,7 @@ The application will open at `http://localhost:3000`
 - `GET /api/orders` - Get all orders (Admin)
 
 ### Users (Admin)
+
 - `GET /api/users` - Get all users (Admin)
 - `GET /api/users/:id` - Get user details (Admin)
 - `PUT /api/users/:id` - Update user (Admin)
@@ -130,11 +148,13 @@ The application will open at `http://localhost:3000`
 ## 💳 Payment Integration
 
 ### PayPal
+
 - Client integration using PayPal React SDK
 - Secure payment processing
 - Transaction verification
 
 ### VNPay
+
 - Vietnamese payment gateway integration
 - Automatic payment status updates
 - Order confirmation after successful payment
@@ -142,12 +162,14 @@ The application will open at `http://localhost:3000`
 ## 📦 Database Models
 
 ### User Model
+
 - Email, password (hashed), name
 - Role (user/admin)
 - Profile information
 - Order history
 
 ### Product Model
+
 - Name, description, price
 - Image upload
 - Stock quantity
@@ -155,6 +177,7 @@ The application will open at `http://localhost:3000`
 - Rating and reviews
 
 ### Order Model
+
 - User reference
 - Order items (product, quantity, price)
 - Shipping address
@@ -194,6 +217,7 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 ## 👨‍💼 Author
 
 **Bùi Đình Quyết**
+
 - Email: buidinhquyet2005@gmail.com
 - GitHub: [@jaygray20033](https://github.com/jaygray20033)
 - Phone: 0392552705
