@@ -158,6 +158,7 @@ const Header = () => {
                   </button>
                   {userInfo.isAdmin && (
                     <>
+                      <hr className='dropdown-divider' />
                       <button
                         onClick={handleNavigateToDashboard}
                         className='dropdown-item'
