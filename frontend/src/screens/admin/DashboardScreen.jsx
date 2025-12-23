@@ -23,12 +23,14 @@ import {
   FaTimes,
   FaWarehouse,
   FaDollarSign,
+  FaUndo,
 } from 'react-icons/fa';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
 import {
   useGetInventoryQuery,
   useUpdateStockMutation,
+  useUpdateBulkStockMutation,
 } from '../../slices/productsApiSlice';
 import { useLanguage } from '../../context/LanguageContext';
 import { formatPrice } from '../../utils/formatPrice';
@@ -41,9 +43,13 @@ const DashboardScreen = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [editingId, setEditingId] = useState(null);
   const [editStock, setEditStock] = useState(0);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [stockChanges, setStockChanges] = useState({});
 
   const { data, isLoading, error, refetch } = useGetInventoryQuery();
   const [updateStock, { isLoading: updating }] = useUpdateStockMutation();
+  const [updateBulkStock, { isLoading: bulkUpdating }] =
+    useUpdateBulkStockMutation();
 
   const filteredProducts = useMemo(() => {
     if (!data?.products) return [];
@@ -53,20 +59,27 @@ const DashboardScreen = () => {
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
 
+      const currentStock =
+        bulkMode && stockChanges[product._id] !== undefined
+          ? stockChanges[product._id]
+          : product.countInStock;
+
       let matchesFilter = true;
       if (filterStatus === 'outOfStock') {
-        matchesFilter = product.countInStock === 0;
+        matchesFilter = currentStock === 0;
       } else if (filterStatus === 'lowStock') {
-        matchesFilter = product.countInStock > 0 && product.countInStock <= 10;
+        matchesFilter = currentStock > 0 && currentStock <= 10;
       } else if (filterStatus === 'inStock') {
-        matchesFilter = product.countInStock > 10;
+        matchesFilter = currentStock > 10;
       }
 
       return matchesSearch && matchesFilter;
     });
-  }, [data?.products, searchTerm, filterStatus]);
+  }, [data?.products, searchTerm, filterStatus, bulkMode, stockChanges]);
 
+  // Single edit handlers
   const handleEditClick = (product) => {
+    if (bulkMode) return;
     setEditingId(product._id);
     setEditStock(product.countInStock);
   };
@@ -86,6 +99,64 @@ const DashboardScreen = () => {
       toast.error(err?.data?.message || err.error);
     }
   };
+
+  // Bulk edit handlers
+  const toggleBulkMode = () => {
+    if (bulkMode) {
+      setStockChanges({});
+    }
+    setBulkMode(!bulkMode);
+    setEditingId(null);
+  };
+
+  const handleBulkStockChange = (productId, newValue) => {
+    const product = data.products.find((p) => p._id === productId);
+    const originalStock = product?.countInStock || 0;
+    const newStock = parseInt(newValue) || 0;
+
+    if (newStock === originalStock) {
+      const updated = { ...stockChanges };
+      delete updated[productId];
+      setStockChanges(updated);
+    } else {
+      setStockChanges((prev) => ({ ...prev, [productId]: newStock }));
+    }
+  };
+
+  const getCurrentStock = (product) => {
+    if (bulkMode && stockChanges[product._id] !== undefined) {
+      return stockChanges[product._id];
+    }
+    return product.countInStock;
+  };
+
+  const handleSaveBulk = async () => {
+    if (Object.keys(stockChanges).length === 0) {
+      toast.info('Không có thay đổi để lưu');
+      return;
+    }
+
+    const updates = Object.entries(stockChanges).map(
+      ([productId, countInStock]) => ({ productId, countInStock })
+    );
+
+    try {
+      const result = await updateBulkStock({ updates }).unwrap();
+      toast.success(result.message);
+      setStockChanges({});
+      setBulkMode(false);
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
+  };
+
+  const handleResetBulk = () => {
+    setStockChanges({});
+    toast.info('Đã hủy tất cả thay đổi');
+  };
+
+  const changesCount = Object.keys(stockChanges).length;
 
   const getStockBadge = (count) => {
     if (count === 0) {
@@ -111,11 +182,50 @@ const DashboardScreen = () => {
   return (
     <Container className='inventory-container'>
       <div className='inventory-header'>
-        <h1 className='inventory-title'>
-          <FaWarehouse className='title-icon' />
-          {t.inventoryManagement}
-        </h1>
-        <p className='inventory-subtitle'>{t.inventoryOverview}</p>
+        <div className='header-top'>
+          <div>
+            <h1 className='inventory-title'>
+              <FaWarehouse className='title-icon' />
+              {t.inventoryManagement}
+            </h1>
+            <p className='inventory-subtitle'>{t.inventoryOverview}</p>
+          </div>
+          <div className='header-actions'>
+            <Button
+              variant={bulkMode ? 'danger' : 'primary'}
+              onClick={toggleBulkMode}
+              className='bulk-mode-btn'
+            >
+              <FaEdit className='me-2' />
+              {bulkMode ? 'Thoát chế độ sửa hàng loạt' : 'Sửa hàng loạt'}
+            </Button>
+          </div>
+        </div>
+        {bulkMode && changesCount > 0 && (
+          <div className='bulk-actions-bar'>
+            <span className='changes-info'>
+              📝 {changesCount} sản phẩm đã thay đổi
+            </span>
+            <div className='bulk-buttons'>
+              <Button
+                variant='outline-secondary'
+                size='sm'
+                onClick={handleResetBulk}
+              >
+                <FaUndo className='me-1' /> Hủy thay đổi
+              </Button>
+              <Button
+                variant='success'
+                size='sm'
+                onClick={handleSaveBulk}
+                disabled={bulkUpdating}
+              >
+                <FaSave className='me-1' />
+                {bulkUpdating ? 'Đang lưu...' : `Lưu tất cả (${changesCount})`}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {isLoading ? (
@@ -251,80 +361,119 @@ const DashboardScreen = () => {
                       <th>{t.countInStock}</th>
                       <th>{t.stockStatus}</th>
                       <th>{t.stockValue}</th>
-                      <th>{t.actions}</th>
+                      {!bulkMode && <th>{t.actions}</th>}
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product._id}>
-                        <td>
-                          <img
-                            src={product.image || '/placeholder.svg'}
-                            alt={product.name}
-                            className='product-thumb'
-                          />
-                        </td>
-                        <td className='product-name'>{product.name}</td>
-                        <td>{product.brand}</td>
-                        <td>{product.category}</td>
-                        <td className='price-cell'>
-                          {formatPrice(product.price)}
-                        </td>
-                        <td>
-                          {editingId === product._id ? (
-                            <Form.Control
-                              type='number'
-                              min='0'
-                              value={editStock}
-                              onChange={(e) =>
-                                setEditStock(Number(e.target.value))
-                              }
-                              className='stock-input'
+                    {filteredProducts.map((product) => {
+                      const currentStock = getCurrentStock(product);
+                      const isChanged =
+                        bulkMode && stockChanges[product._id] !== undefined;
+                      return (
+                        <tr
+                          key={product._id}
+                          className={isChanged ? 'row-changed' : ''}
+                        >
+                          <td>
+                            <img
+                              src={product.image || '/placeholder.svg'}
+                              alt={product.name}
+                              className='product-thumb'
                             />
-                          ) : (
-                            <span className='stock-count'>
-                              {product.countInStock}
-                            </span>
+                          </td>
+                          <td className='product-name'>
+                            {product.name}
+                            {isChanged && (
+                              <Badge bg='info' className='ms-2 changed-badge'>
+                                Đã sửa
+                              </Badge>
+                            )}
+                          </td>
+                          <td>{product.brand}</td>
+                          <td>{product.category}</td>
+                          <td className='price-cell'>
+                            {formatPrice(product.price)}
+                          </td>
+                          <td>
+                            {bulkMode ? (
+                              <div className='bulk-stock-input'>
+                                <Form.Control
+                                  type='number'
+                                  min='0'
+                                  value={currentStock}
+                                  onChange={(e) =>
+                                    handleBulkStockChange(
+                                      product._id,
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`stock-input ${
+                                    isChanged ? 'input-changed' : ''
+                                  }`}
+                                />
+                                {isChanged && (
+                                  <small className='original-value'>
+                                    Gốc: {product.countInStock}
+                                  </small>
+                                )}
+                              </div>
+                            ) : editingId === product._id ? (
+                              <Form.Control
+                                type='number'
+                                min='0'
+                                value={editStock}
+                                onChange={(e) =>
+                                  setEditStock(Number(e.target.value))
+                                }
+                                className='stock-input'
+                              />
+                            ) : (
+                              <span className='stock-count'>
+                                {product.countInStock}
+                              </span>
+                            )}
+                          </td>
+                          <td>{getStockBadge(currentStock)}</td>
+                          <td className='value-cell'>
+                            {formatPrice(product.price * currentStock)}
+                          </td>
+                          {!bulkMode && (
+                            <td>
+                              {editingId === product._id ? (
+                                <div className='action-buttons'>
+                                  <Button
+                                    variant='success'
+                                    size='sm'
+                                    onClick={() => handleSaveStock(product._id)}
+                                    disabled={updating}
+                                    className='save-btn'
+                                  >
+                                    <FaSave />
+                                  </Button>
+                                  <Button
+                                    variant='secondary'
+                                    size='sm'
+                                    onClick={handleCancelEdit}
+                                    className='cancel-btn'
+                                  >
+                                    <FaTimes />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  variant='outline-primary'
+                                  size='sm'
+                                  onClick={() => handleEditClick(product)}
+                                  className='edit-btn'
+                                >
+                                  <FaEdit />
+                                </Button>
+                              )}
+                            </td>
                           )}
-                        </td>
-                        <td>{getStockBadge(product.countInStock)}</td>
-                        <td className='value-cell'>
-                          {formatPrice(product.price * product.countInStock)}
-                        </td>
-                        <td>
-                          {editingId === product._id ? (
-                            <div className='action-buttons'>
-                              <Button
-                                variant='success'
-                                size='sm'
-                                onClick={() => handleSaveStock(product._id)}
-                                disabled={updating}
-                                className='save-btn'
-                              >
-                                <FaSave />
-                              </Button>
-                              <Button
-                                variant='secondary'
-                                size='sm'
-                                onClick={handleCancelEdit}
-                                className='cancel-btn'
-                              >
-                                <FaTimes />
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              variant='outline-primary'
-                              size='sm'
-                              onClick={() => handleEditClick(product)}
-                              className='edit-btn'
-                            >
-                              <FaEdit />
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </Table>
               )}

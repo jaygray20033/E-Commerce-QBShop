@@ -1,0 +1,490 @@
+{
+  "info": {
+    "_postman_id": "qbshop-inventory-v3",
+    "name": "QBShop - Kiem Thu Ton Kho (14 TC)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseURL", "value": "http://localhost:5000" },
+    { "key": "productId1", "value": "" },
+    { "key": "productId2", "value": "" },
+    { "key": "productId3", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0-SETUP",
+      "item": [
+        {
+          "name": "Login-Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('OK',function(){pm.response.to.have.status(200);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "Get-Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json();if(j.products&&j.products.length>=3){pm.collectionVariables.set('productId1',j.products[0]._id);pm.collectionVariables.set('productId2',j.products[1]._id);pm.collectionVariables.set('productId3',j.products[2]._id);}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": { "method": "GET", "url": "{{baseURL}}/api/products" }
+        }
+      ]
+    },
+    {
+      "name": "1-GET-INVENTORY",
+      "item": [
+        {
+          "name": "Relogin-Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "TC_INV_001-GET-Inventory-OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status200',function(){pm.response.to.have.status(200);});var j=pm.response.json();pm.test('HasProducts',function(){pm.expect(j).to.have.property('products');});pm.test('HasStats',function(){pm.expect(j).to.have.property('stats');});pm.test('StatsFields',function(){pm.expect(j.stats).to.have.property('totalProducts');pm.expect(j.stats).to.have.property('outOfStock');pm.expect(j.stats).to.have.property('lowStock');pm.expect(j.stats).to.have.property('inStock');pm.expect(j.stats).to.have.property('totalValue');});console.log('Stats:',JSON.stringify(j.stats));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseURL}}/api/products/inventory"
+          }
+        },
+        {
+          "name": "Login-User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"john@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "TC_INV_002-GET-Inventory-User-FAIL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status401or403',function(){pm.expect(pm.response.code).to.be.oneOf([401,403]);});pm.test('NotAuthorized',function(){pm.expect(pm.response.json().message.toLowerCase()).to.include('not authorized');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseURL}}/api/products/inventory"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": { "method": "POST", "url": "{{baseURL}}/api/users/logout" }
+        },
+        {
+          "name": "TC_INV_003-GET-Inventory-NoToken-FAIL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status401',function(){pm.response.to.have.status(401);});pm.test('NotAuthorized',function(){pm.expect(pm.response.json().message.toLowerCase()).to.include('not authorized');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseURL}}/api/products/inventory"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2-UPDATE-SINGLE-STOCK",
+      "item": [
+        {
+          "name": "Relogin-Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "TC_INV_004-PUT-Stock-100-OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status200',function(){pm.response.to.have.status(200);});var p=pm.response.json();pm.test('Stock100',function(){pm.expect(p.countInStock).to.eql(100);});pm.test('HasName',function(){pm.expect(p).to.have.property('name');});console.log('Updated:',p.name,'Stock:',p.countInStock);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"countInStock\":100}" },
+            "url": "{{baseURL}}/api/products/{{productId1}}/stock"
+          }
+        },
+        {
+          "name": "TC_INV_005-PUT-Stock-0-OutOfStock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status200',function(){pm.response.to.have.status(200);});pm.test('Stock0',function(){pm.expect(pm.response.json().countInStock).to.eql(0);});console.log('OUT OF STOCK:',pm.response.json().name);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"countInStock\":0}" },
+            "url": "{{baseURL}}/api/products/{{productId1}}/stock"
+          }
+        },
+        {
+          "name": "TC_INV_006-PUT-Stock-Negative-BUG",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var s=pm.response.code;if(s===400){pm.test('RejectNegativeOK',function(){pm.response.to.have.status(400);});console.log('API rejects negative');}else{pm.test('BUG-NegativeAccepted',function(){console.log('BUG: stock=',pm.response.json().countInStock);pm.expect(pm.response.json().countInStock).to.be.at.least(0);});}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"countInStock\":-10}" },
+            "url": "{{baseURL}}/api/products/{{productId1}}/stock"
+          }
+        },
+        {
+          "name": "TC_INV_007-PUT-Stock-NotFound",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status404',function(){pm.response.to.have.status(404);});pm.test('NotFoundMsg',function(){pm.expect(pm.response.json().message.toLowerCase()).to.include('not found');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"countInStock\":50}" },
+            "url": "{{baseURL}}/api/products/000000000000000000000000/stock"
+          }
+        },
+        {
+          "name": "TC_INV_008-PUT-Stock-InvalidID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status400or404',function(){pm.expect(pm.response.code).to.be.oneOf([400,404]);});pm.test('ErrorMsg',function(){pm.expect(pm.response.json()).to.have.property('message');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"countInStock\":50}" },
+            "url": "{{baseURL}}/api/products/invalid-id/stock"
+          }
+        },
+        {
+          "name": "Login-User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"john@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "TC_INV_009-PUT-Stock-User-FAIL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status401or403',function(){pm.expect(pm.response.code).to.be.oneOf([401,403]);});pm.test('NotAuthorized',function(){pm.expect(pm.response.json().message.toLowerCase()).to.include('not authorized');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"countInStock\":999}" },
+            "url": "{{baseURL}}/api/products/{{productId1}}/stock"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3-BULK-STOCK-UPDATE",
+      "item": [
+        {
+          "name": "Relogin-Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "TC_INV_010-Bulk-Stock-OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status200',function(){pm.response.to.have.status(200);});var j=pm.response.json();pm.test('HasMessage',function(){pm.expect(j).to.have.property('message');});pm.test('HasResults',function(){pm.expect(j.results).to.have.property('success');pm.expect(j.results).to.have.property('failed');});pm.test('SuccessAbove0',function(){pm.expect(j.results.success.length).to.be.above(0);});pm.test('Failed0',function(){pm.expect(j.results.failed.length).to.eql(0);});console.log('Bulk:',j.message);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"updates\":[{\"productId\":\"{{productId1}}\",\"countInStock\":50},{\"productId\":\"{{productId2}}\",\"countInStock\":75},{\"productId\":\"{{productId3}}\",\"countInStock\":30}]}"
+            },
+            "url": "{{baseURL}}/api/products/bulk-stock"
+          }
+        },
+        {
+          "name": "TC_INV_011-Bulk-Stock-Partial",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status200',function(){pm.response.to.have.status(200);});var r=pm.response.json().results;pm.test('1Success',function(){pm.expect(r.success.length).to.eql(1);});pm.test('2Failed',function(){pm.expect(r.failed.length).to.eql(2);});pm.test('FailedHasError',function(){r.failed.forEach(function(i){pm.expect(i).to.have.property('error');});});console.log('Partial:',pm.response.json().message);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"updates\":[{\"productId\":\"{{productId1}}\",\"countInStock\":100},{\"productId\":\"000000000000000000000000\",\"countInStock\":50},{\"productId\":\"111111111111111111111111\",\"countInStock\":25}]}"
+            },
+            "url": "{{baseURL}}/api/products/bulk-stock"
+          }
+        },
+        {
+          "name": "TC_INV_012-Bulk-Stock-EmptyArray",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status400',function(){pm.response.to.have.status(400);});pm.test('ErrorMsg',function(){pm.expect(pm.response.json().message).to.include('Vui');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"updates\":[]}" },
+            "url": "{{baseURL}}/api/products/bulk-stock"
+          }
+        },
+        {
+          "name": "TC_INV_013-Bulk-Stock-NoField",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status400',function(){pm.response.to.have.status(400);});pm.test('HasMessage',function(){pm.expect(pm.response.json()).to.have.property('message');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": "{{baseURL}}/api/products/bulk-stock"
+          }
+        },
+        {
+          "name": "Login-User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"john@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "TC_INV_014-Bulk-Stock-User-FAIL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status401or403',function(){pm.expect(pm.response.code).to.be.oneOf([401,403]);});pm.test('NotAuthorized',function(){pm.expect(pm.response.json().message.toLowerCase()).to.include('not authorized');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"updates\":[{\"productId\":\"{{productId1}}\",\"countInStock\":999}]}"
+            },
+            "url": "{{baseURL}}/api/products/bulk-stock"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4-CLEANUP",
+      "item": [
+        {
+          "name": "Relogin-Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@email.com\",\"password\":\"123456\"}"
+            },
+            "url": "{{baseURL}}/api/users/auth"
+          }
+        },
+        {
+          "name": "Restore-Stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('CleanupOK',function(){pm.response.to.have.status(200);});console.log('Stock restored');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"updates\":[{\"productId\":\"{{productId1}}\",\"countInStock\":10},{\"productId\":\"{{productId2}}\",\"countInStock\":10},{\"productId\":\"{{productId3}}\",\"countInStock\":10}]}"
+            },
+            "url": "{{baseURL}}/api/products/bulk-stock"
+          }
+        },
+        {
+          "name": "Final-Inventory-Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('FinalOK',function(){pm.response.to.have.status(200);});var s=pm.response.json().stats;console.log('FINAL STATS - Total:',s.totalProducts,'OutOfStock:',s.outOfStock,'LowStock:',s.lowStock,'InStock:',s.inStock,'Value:',s.totalValue);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseURL}}/api/products/inventory"
+          }
+        }
+      ]
+    }
+  ]
+}
